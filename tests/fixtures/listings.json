@@ -1,0 +1,54 @@
+{
+  "city_median_price": 400000,
+  "city_median_dom": 20,
+  "as_of": "2026-08-31",
+  "source": "fixture",
+  "listings": [
+    {
+      "listing_id": "high-price",
+      "geo_id": "metro:austin",
+      "price": 1000000,
+      "dom": 10,
+      "as_of": "2026-08-31",
+      "source": "fixture"
+    },
+    {
+      "listing_id": "low-price",
+      "geo_id": "metro:austin",
+      "price": 160000,
+      "dom": 8,
+      "as_of": "2026-08-31",
+      "source": "fixture"
+    },
+    {
+      "listing_id": "high-dom",
+      "geo_id": "metro:austin",
+      "price": 410000,
+      "dom": 60,
+      "as_of": "2026-08-31",
+      "source": "fixture"
+    },
+    {
+      "listing_id": "normal",
+      "geo_id": "metro:austin",
+      "price": 405000,
+      "dom": 18,
+      "as_of": "2026-08-31",
+      "source": "fixture"
+    },
+    {
+      "listing_id": "no-price",
+      "geo_id": "metro:austin",
+      "dom": 12,
+      "as_of": "2026-08-31",
+      "source": "fixture"
+    },
+    {
+      "listing_id": "no-geo",
+      "price": 900000,
+      "dom": 5,
+      "as_of": "2026-08-31",
+      "source": "fixture"
+    }
+  ]
+}

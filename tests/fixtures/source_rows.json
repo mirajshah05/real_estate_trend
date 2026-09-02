@@ -1,0 +1,48 @@
+{
+  "now": "2026-08-31T12:00:00Z",
+  "fresh_listing": {
+    "source_id": "listing:fresh",
+    "provider": "rentcast",
+    "dataset": "listings",
+    "grain": "listing",
+    "cadence": "daily",
+    "observation_as_of": "2026-08-30T12:00:00Z",
+    "http_last_modified": "2026-08-30T18:00:00Z"
+  },
+  "stale_listing": {
+    "source_id": "listing:stale",
+    "provider": "rentcast",
+    "dataset": "listings",
+    "grain": "listing",
+    "cadence": "daily",
+    "observation_as_of": "2026-08-20T12:00:00Z",
+    "http_last_modified": "2026-08-31T11:00:00Z"
+  },
+  "stale_city": {
+    "source_id": "zillow:city:austin",
+    "provider": "zillow",
+    "dataset": "city_inventory",
+    "grain": "city",
+    "cadence": "weekly",
+    "observation_as_of": "2026-08-20T00:00:00Z",
+    "http_last_modified": "2026-08-31T10:00:00Z"
+  },
+  "zillow_weekly_dual": {
+    "source_id": "zillow:inv_week_metro",
+    "provider": "zillow",
+    "dataset": "invt_fs",
+    "grain": "metro",
+    "cadence": "weekly",
+    "observation_as_of": "2026-08-15",
+    "http_last_modified": "2026-08-25T10:27:38Z"
+  },
+  "zhvi_monthly": {
+    "source_id": "zillow:zhvi_metro_month",
+    "provider": "zillow",
+    "dataset": "zhvi",
+    "grain": "metro",
+    "cadence": "monthly",
+    "observation_as_of": "2026-07-31",
+    "http_last_modified": "2026-08-16T00:00:00Z"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "url": "https://services2.arcgis.com/tcv2cMrq63AgvbHF/ArcGIS/rest/services/PlanningOfficeDataService2/FeatureServer/2/query?where=NAME+IN+%28%27PALO+ALTO%27%2C%27SANTA+CLARA%27%2C%27MOUNTAIN+VIEW%27%2C%27SUNNYVALE%27%2C%27SAN+JOSE%27%29&outFields=NAME&returnGeometry=true&outSR=4326&f=geojson",
+  "etag": "sd21971_-1138532597",
+  "last_modified": "Wed, 22 Jul 2026 21:53:47 GMT",
+  "content_sha256": "70511c1ad8d0b230adb4b7e169919170ffb27da1e5ae94c12c9a0ffbd973027f",
+  "bytes": 1058589,
+  "fetched_at": "2026-09-01T20:21:44Z"
+}

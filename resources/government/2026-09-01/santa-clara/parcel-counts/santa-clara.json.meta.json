@@ -1,0 +1,8 @@
+{
+  "url": "https://services2.arcgis.com/tcv2cMrq63AgvbHF/arcgis/rest/services/Parcels_Public_View/FeatureServer/0/query?where=Situs_Address_Full+LIKE+%27%25+SANTA+CLARA+CA+%25%27&returnCountOnly=true&f=json",
+  "etag": "sd21153_-1861270729",
+  "last_modified": "Tue, 21 Jul 2026 20:35:28 GMT",
+  "content_sha256": "147f95b039009178a9ec26921e2b415dbd1ef518f4bd641f06c1facbc60bf35c",
+  "bytes": 15,
+  "fetched_at": "2026-09-01T20:21:46Z"
+}

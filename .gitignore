@@ -1,0 +1,52 @@
+# Secrets and local configuration. Commit only the documented examples.
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+credentials*.json
+secrets*.json
+.npmrc
+.pypirc
+data/.token
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Generated and downloaded market data
+data/raw/
+data/probe/*
+!data/probe/run_probes.py
+data/realtykit.db
+data/*.db
+data/*.db-*
+data/*.sqlite
+data/*.sqlite-*
+data/geo/
+
+# Frontend
+web/node_modules/
+web/dist/
+
+# Editor and operating-system files
+.DS_Store
+.idea/
+.vscode/
+*.log

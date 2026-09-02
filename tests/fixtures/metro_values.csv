@@ -1,0 +1,13 @@
+geo_id,name,value,population
+metro:a,Alpha,100,120000
+metro:b,Beta,102,80000
+metro:c,Gamma,98,95000
+metro:d,Delta,101,110000
+metro:e,Epsilon,99,70000
+metro:f,Zeta,100,150000
+metro:g,Eta,103,88000
+metro:h,Theta,97,64000
+metro:i,Iota,101,200000
+metro:j,Kappa,99,91000
+metro:k,Lambda,100,105000
+metro:outlier,OutlierVille,250,180000

@@ -1,0 +1,130 @@
+{
+  "snapshot_date_utc": "2026-09-01",
+  "created_at": "2026-09-01T20:21:48Z",
+  "scope": {
+    "primary_county": "Santa Clara County, California",
+    "target_cities": [
+      "Palo Alto",
+      "Santa Clara",
+      "Mountain View",
+      "Sunnyvale",
+      "San Jose"
+    ],
+    "adjacent_reference": "San Mateo County, California"
+  },
+  "limitations": [
+    "These are geography and parcel-reference sources, not deed sale-price feeds.",
+    "Santa Clara parcel counts are derived from the situs-address city text.",
+    "Full parcel polygons are intentionally not bulk-downloaded; use an on-demand bounded query."
+  ],
+  "files": [
+    {
+      "label": "Santa Clara city-limit metadata",
+      "url": "https://services2.arcgis.com/tcv2cMrq63AgvbHF/ArcGIS/rest/services/PlanningOfficeDataService2/FeatureServer/2?f=pjson",
+      "path": "city-limits.layer.json",
+      "fetched_at": "2026-09-01T20:21:43Z",
+      "http_status": 200,
+      "etag": "1370865367",
+      "last_modified": "Wed, 22 Jul 2026 21:53:47 GMT",
+      "sha256": "2e6555c686060923b9624535e253e660040df3d227a9ae61c978ad5d8393ce22",
+      "bytes": 32354,
+      "from_cache": false
+    },
+    {
+      "label": "Five target-city boundaries",
+      "url": "https://services2.arcgis.com/tcv2cMrq63AgvbHF/ArcGIS/rest/services/PlanningOfficeDataService2/FeatureServer/2/query?where=NAME+IN+%28%27PALO+ALTO%27%2C%27SANTA+CLARA%27%2C%27MOUNTAIN+VIEW%27%2C%27SUNNYVALE%27%2C%27SAN+JOSE%27%29&outFields=NAME&returnGeometry=true&outSR=4326&f=geojson",
+      "path": "target-city-boundaries.geojson",
+      "fetched_at": "2026-09-01T20:21:44Z",
+      "http_status": 200,
+      "etag": "sd21971_-1138532597",
+      "last_modified": "Wed, 22 Jul 2026 21:53:47 GMT",
+      "sha256": "70511c1ad8d0b230adb4b7e169919170ffb27da1e5ae94c12c9a0ffbd973027f",
+      "bytes": 1058589,
+      "from_cache": false
+    },
+    {
+      "label": "Santa Clara public-parcel metadata",
+      "url": "https://services2.arcgis.com/tcv2cMrq63AgvbHF/arcgis/rest/services/Parcels_Public_View/FeatureServer/0?f=pjson",
+      "path": "parcels.layer.json",
+      "fetched_at": "2026-09-01T20:21:45Z",
+      "http_status": 200,
+      "etag": "-2098043195",
+      "last_modified": "Tue, 21 Jul 2026 20:35:28 GMT",
+      "sha256": "12f17e0060746537e6c9209fa6a7ac872792cca98103492057d6c8d0cb1508b9",
+      "bytes": 16138,
+      "from_cache": false
+    },
+    {
+      "label": "Palo Alto parcel count",
+      "url": "https://services2.arcgis.com/tcv2cMrq63AgvbHF/arcgis/rest/services/Parcels_Public_View/FeatureServer/0/query?where=Situs_Address_Full+LIKE+%27%25+PALO+ALTO+CA+%25%27&returnCountOnly=true&f=json",
+      "path": "palo-alto.json",
+      "fetched_at": "2026-09-01T20:21:45Z",
+      "http_status": 200,
+      "etag": "sd21153_-1861270729",
+      "last_modified": "Tue, 21 Jul 2026 20:35:28 GMT",
+      "sha256": "2a769e1ebb70a791300c1dce4b36c21e2551998472dcbcafd554e10cdc038b9f",
+      "bytes": 15,
+      "from_cache": false
+    },
+    {
+      "label": "Santa Clara parcel count",
+      "url": "https://services2.arcgis.com/tcv2cMrq63AgvbHF/arcgis/rest/services/Parcels_Public_View/FeatureServer/0/query?where=Situs_Address_Full+LIKE+%27%25+SANTA+CLARA+CA+%25%27&returnCountOnly=true&f=json",
+      "path": "santa-clara.json",
+      "fetched_at": "2026-09-01T20:21:46Z",
+      "http_status": 200,
+      "etag": "sd21153_-1861270729",
+      "last_modified": "Tue, 21 Jul 2026 20:35:28 GMT",
+      "sha256": "147f95b039009178a9ec26921e2b415dbd1ef518f4bd641f06c1facbc60bf35c",
+      "bytes": 15,
+      "from_cache": false
+    },
+    {
+      "label": "Mountain View parcel count",
+      "url": "https://services2.arcgis.com/tcv2cMrq63AgvbHF/arcgis/rest/services/Parcels_Public_View/FeatureServer/0/query?where=Situs_Address_Full+LIKE+%27%25+MOUNTAIN+VIEW+CA+%25%27&returnCountOnly=true&f=json",
+      "path": "mountain-view.json",
+      "fetched_at": "2026-09-01T20:21:46Z",
+      "http_status": 200,
+      "etag": "sd21153_-1861270729",
+      "last_modified": "Tue, 21 Jul 2026 20:35:28 GMT",
+      "sha256": "4c69b781dd1a01427fedfa12c5248b435092820deb7718a5df0c642bc9ff7e76",
+      "bytes": 15,
+      "from_cache": false
+    },
+    {
+      "label": "Sunnyvale parcel count",
+      "url": "https://services2.arcgis.com/tcv2cMrq63AgvbHF/arcgis/rest/services/Parcels_Public_View/FeatureServer/0/query?where=Situs_Address_Full+LIKE+%27%25+SUNNYVALE+CA+%25%27&returnCountOnly=true&f=json",
+      "path": "sunnyvale.json",
+      "fetched_at": "2026-09-01T20:21:48Z",
+      "http_status": 200,
+      "etag": "sd21153_-1861270729",
+      "last_modified": "Tue, 21 Jul 2026 20:35:28 GMT",
+      "sha256": "8cb9dc184fc3b5103919fe69ee4d2702093133d3ebf5b0f360aedeac94481ebc",
+      "bytes": 15,
+      "from_cache": false
+    },
+    {
+      "label": "San Jose parcel count",
+      "url": "https://services2.arcgis.com/tcv2cMrq63AgvbHF/arcgis/rest/services/Parcels_Public_View/FeatureServer/0/query?where=Situs_Address_Full+LIKE+%27%25+SAN+JOSE+CA+%25%27&returnCountOnly=true&f=json",
+      "path": "san-jose.json",
+      "fetched_at": "2026-09-01T20:21:48Z",
+      "http_status": 200,
+      "etag": "sd21153_-1861270729",
+      "last_modified": "Tue, 21 Jul 2026 20:35:28 GMT",
+      "sha256": "d907b852c8a92d634831a8f1493d8bd3d5b7be7f944a4eb3b7769d606dca2711",
+      "bytes": 18,
+      "from_cache": false
+    },
+    {
+      "label": "San Mateo active-parcel service metadata",
+      "url": "https://gis.smcgov.org/maps/rest/services/ACRE/ACTIVE_PARCELS/FeatureServer?f=pjson",
+      "path": "active-parcels.service.json",
+      "fetched_at": "2026-09-01T20:21:48Z",
+      "http_status": 200,
+      "etag": "\"e629f99b\"",
+      "last_modified": null,
+      "sha256": "0a418402d531a62e680160e19f8c2c406b8001402ae660217e7b6cd63fa747bd",
+      "bytes": 3503,
+      "from_cache": false
+    }
+  ]
+}

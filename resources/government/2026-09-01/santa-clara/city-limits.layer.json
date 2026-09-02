@@ -1,0 +1,710 @@
+{
+  "currentVersion" : 12, 
+  "id" : 2, 
+  "name" : "City Limits", 
+  "type" : "Feature Layer", 
+  "serviceItemId" : "b1fa77f6e79f4ccbbc34e737e1bc113d", 
+  "cacheMaxAge" : 30, 
+  "sourceSchemaChangesAllowed" : true, 
+  "hasViews" : true, 
+  "displayField" : "Name", 
+  "description" : "City Limits Layer. This is the official GIS layer representing City Limit Boundaries for Cities within Santa Clara County. This layer is maintained by the Planning Office for the benefit of LAFCO.", 
+  "copyrightText" : "", 
+  "defaultVisibility" : false, 
+  "editingInfo" : {
+    "lastEditDate" : 1784757227043, 
+    "schemaLastEditDate" : 1784757227043, 
+    "dataLastEditDate" : 1784757227043
+  }, 
+  "relationships" : [], 
+  "isDataVersioned" : false, 
+  "hasContingentValuesDefinition" : false, 
+  "supportsAppend" : true, 
+  "supportsCalculate" : true, 
+  "supportsASyncCalculate" : true, 
+  "supportsTruncate" : true, 
+  "supportsAttachmentsByUploadId" : true, 
+  "supportsAttachmentsResizing" : true, 
+  "supportsRollbackOnFailureParameter" : true, 
+  "supportsStatistics" : true, 
+  "supportsExceedsLimitStatistics" : true, 
+  "supportsAdvancedQueries" : true, 
+  "supportsValidateSql" : true, 
+  "supportsCoordinatesQuantization" : true, 
+  "supportsLayerOverrides" : true, 
+  "supportsTilesAndBasicQueriesMode" : true, 
+  "supportsFieldDescriptionProperty" : true, 
+  "supportsQuantizationEditMode" : true, 
+  "supportsColumnStoreIndex" : true, 
+  "supportsApplyEditsWithGlobalIds" : false, 
+  "supportsMultiScaleGeometry" : true, 
+  "supportsReturningQueryGeometry" : true, 
+  "enableNullGeometry" : false, 
+  "hasGeometryProperties" : true, 
+  "geometryProperties" : 
+  {
+    "shapeAreaFieldName" : "Shape__Area", 
+    "shapeLengthFieldName" : "Shape__Length", 
+    "units" : "esriFeet"
+  }, 
+  "advancedQueryCapabilities" : {
+    "supportsPagination" : true, 
+    "supportsPaginationOnAggregatedQueries" : true, 
+    "supportsQueryRelatedPagination" : true, 
+    "supportsQueryWithDistance" : true, 
+    "supportsOutDistance" : true, 
+    "supportsReturningQueryExtent" : true, 
+    "supportsStatistics" : true, 
+    "supportsOrderBy" : true, 
+    "supportsDistinct" : true, 
+    "supportsQueryWithResultType" : true, 
+    "supportsSqlExpression" : true, 
+    "supportsTimeRelation" : true, 
+    "supportsAdvancedQueryRelated" : true, 
+    "supportsCountDistinct" : true, 
+    "supportsPercentileStatistics" : true, 
+    "supportsApproxPercentileStatistics" : true, 
+    "supportsSpatialAggregationStatistics" : true, 
+    "supportsTrueCurve" : true, 
+    "supportedSpatialAggregationStatistics" : [
+      "EnvelopeAggregate", 
+      "CentroidAggregate", 
+      "ConvexHullAggregate"
+    ], 
+    "supportsLod" : true, 
+    "supportsQueryWithLodSR" : false, 
+    "supportedLodTypes" : [
+      "geohash"
+    ], 
+    "supportsReturningGeometryCentroid" : true, 
+    "supportsReturningGeometryEnvelope" : true, 
+    "supportsReturningGeometryProperties" : true, 
+    "supportsQueryWithDatumTransformation" : true, 
+    "supportsCurrentUserQueries" : true, 
+    "supportsHavingClause" : true, 
+    "supportsOutFieldSQLExpression" : true, 
+    "supportsMaxRecordCountFactor" : true, 
+    "supportsTopFeaturesQuery" : true, 
+    "supportsDisjointSpatialRel" : true, 
+    "supportsQueryWithCacheHint" : true, 
+    "supportedOperationsWithCacheHint" : [
+      "query", 
+      "queryTopFilter", 
+      "queryAnalytics", 
+      "queryAttachments", 
+      "queryRelated", 
+      "queryBins", 
+      "queryPivot"
+    ], 
+    "supportsQueryAnalytic" : true, 
+    "supportsQueryPivot" : true, 
+    "supportsQueryBins" : true, 
+    "supportsDefaultSR" : true, 
+    "supportsTranslations" : false, 
+    "supportsAggIds" : true, 
+    "supportsQueryWithCollation" : true, 
+    "supportsISODOW" : true, 
+    "supportsISOWeek" : true, 
+    "supportsFullTextSearch" : true, 
+    "fullTextSearchCapabilities" : {
+      "supportsAccentSensitivity" : true, 
+      "supportsStopWords" : true, 
+      "supportsSearchOperator" : true, 
+      "supportsOperator" : true
+    }
+  }, 
+  "advancedQueryAnalyticCapabilities" : {
+    "supportsLinearRegression" : true, 
+    "supportsTrendlineRegression" : true, 
+    "supportsAsync" : true, 
+    "supportsPercentileAnalytic" : true
+  }, 
+  "queryBinsCapabilities" : {
+    "supportsAsync" : true, 
+    "supportsAutoIntervalBin" : true, 
+    "supportsFixedIntervalBin" : true, 
+    "supportsFixedBoundariesBin" : true, 
+    "supportsDateBin" : true, 
+    "supportsClassificationBin" : true, 
+    "supportsStackBy" : true, 
+    "supportsSplitBy" : true, 
+    "supportsFirstDayOfWeek" : true, 
+    "supportsSnapToData" : true, 
+    "supportsReturnFullIntervalBin" : true, 
+    "supportsReturnStackValueRange" : true, 
+    "supportsNormalization" : true, 
+    "supportedStatisticTypes" : [
+      "COUNT", 
+      "SUM", 
+      "AVG", 
+      "VAR", 
+      "STDDEV", 
+      "MIN", 
+      "MAX", 
+      "PERCENTILE_CONT", 
+      "PERCENTILE_DISC", 
+      "APPROX_PERCENTILE_CONT", 
+      "APPROX_PERCENTILE_DISC", 
+      "CentroidAggregate", 
+      "EnvelopeAggregate", 
+      "ConvexHullAggregate"
+    ], 
+    "supportedNormalizationTypes" : [
+      "boxCox", 
+      "field", 
+      "inverse", 
+      "log", 
+      "naturalLog", 
+      "percentOfTotal", 
+      "squareRoot"
+    ]
+  }, 
+  "supportedOperationsWithCollation" : "query,addField,updateField", 
+  "advancedEditingCapabilities" : {
+    "supportedSqlFormatsInCalculate" : [
+      "standard"
+    ], 
+    "supportsAsyncApplyEdits" : true, 
+    "supportsReturnEditResults" : true, 
+    "supportsApplyEditsbyUploadID" : true, 
+    "supportedApplyEditsUploadIDFormats" : "JSON,PBF", 
+    "supportsTranslation" : false, 
+    "supportsMaxTranslations" : 10
+  }, 
+  "infoInEstimates" : [
+    "extent", 
+    "count"
+  ], 
+  "useStandardizedQueries" : true, 
+  "geometryType" : "esriGeometryPolygon", 
+  "minScale" : 0, 
+  "maxScale" : 0, 
+  "extent" : {
+    "xmin" : 6066842.1282238513, 
+    "ymin" : 1814248.6638152748, 
+    "xmax" : 6264061.5451359451, 
+    "ymax" : 2000729.9266787767, 
+    "spatialReference" : {
+      "wkt" : "PROJCS[\"NAD_1983_StatePlane_California_III_FIPS_0403_Feet\",GEOGCS[\"GCS_North_American_1983\",DATUM[\"D_North_American_1983\",SPHEROID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Lambert_Conformal_Conic\"],PARAMETER[\"False_Easting\",6561666.666666666],PARAMETER[\"False_Northing\",1640416.666666667],PARAMETER[\"Central_Meridian\",-120.5],PARAMETER[\"Standard_Parallel_1\",37.06666666666667],PARAMETER[\"Standard_Parallel_2\",38.43333333333333],PARAMETER[\"Latitude_Of_Origin\",36.5],UNIT[\"Foot_US\",0.3048006096012192]],VERTCS[\"North_American_Vertical_Datum_1988\",VDATUM[\"North_American_Vertical_Datum_1988\"],PARAMETER[\"Vertical_Shift\",0.0],PARAMETER[\"Direction\",1.0],UNIT[\"Meter\",1.0]]", 
+      "wkt2" : "COMPOUNDCRS[\"\",PROJCRS[\"NAD_1983_StatePlane_California_III_FIPS_0403_Feet\",BASEGEOGCRS[\"GCS_North_American_1983\",DATUM[\"D_North_American_1983\",ELLIPSOID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],CS[ellipsoidal,2],AXIS[\"Latitude (lat)\",north,ORDER[1]],AXIS[\"Longitude (lon)\",east,ORDER[2]],ANGLEUNIT[\"Degree\",0.0174532925199433]],CONVERSION[\"Lambert_Conformal_Conic\",METHOD[\"Lambert_Conformal_Conic\"],PARAMETER[\"False_Easting\",6561666.666666666,LENGTHUNIT[\"Foot_US\",0.3048006096012192]],PARAMETER[\"False_Northing\",1640416.666666667,LENGTHUNIT[\"Foot_US\",0.3048006096012192]],PARAMETER[\"Central_Meridian\",-120.5],PARAMETER[\"Standard_Parallel_1\",37.06666666666667],PARAMETER[\"Standard_Parallel_2\",38.43333333333333],PARAMETER[\"Latitude_Of_Origin\",36.5]],CS[Cartesian,2],AXIS[\"Easting (X)\",east,ORDER[1]],AXIS[\"Northing (Y)\",north,ORDER[2]],LENGTHUNIT[\"Foot_US\",0.3048006096012192]],VERTCRS[\"North_American_Vertical_Datum_1988\",VDATUM[\"North_American_Vertical_Datum_1988\"],CS[vertical,1],AXIS[\"Gravity-related height (H)\",up,LENGTHUNIT[\"Meter\",1.0]]]]"
+    }
+  }, 
+  "spatialReference" : {
+    "wkt" : "PROJCS[\"NAD_1983_StatePlane_California_III_FIPS_0403_Feet\",GEOGCS[\"GCS_North_American_1983\",DATUM[\"D_North_American_1983\",SPHEROID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Lambert_Conformal_Conic\"],PARAMETER[\"False_Easting\",6561666.666666666],PARAMETER[\"False_Northing\",1640416.666666667],PARAMETER[\"Central_Meridian\",-120.5],PARAMETER[\"Standard_Parallel_1\",37.06666666666667],PARAMETER[\"Standard_Parallel_2\",38.43333333333333],PARAMETER[\"Latitude_Of_Origin\",36.5],UNIT[\"Foot_US\",0.3048006096012192]],VERTCS[\"North_American_Vertical_Datum_1988\",VDATUM[\"North_American_Vertical_Datum_1988\"],PARAMETER[\"Vertical_Shift\",0.0],PARAMETER[\"Direction\",1.0],UNIT[\"Meter\",1.0]]", 
+    "wkt2" : "COMPOUNDCRS[\"\",PROJCRS[\"NAD_1983_StatePlane_California_III_FIPS_0403_Feet\",BASEGEOGCRS[\"GCS_North_American_1983\",DATUM[\"D_North_American_1983\",ELLIPSOID[\"GRS_1980\",6378137.0,298.257222101]],PRIMEM[\"Greenwich\",0.0],CS[ellipsoidal,2],AXIS[\"Latitude (lat)\",north,ORDER[1]],AXIS[\"Longitude (lon)\",east,ORDER[2]],ANGLEUNIT[\"Degree\",0.0174532925199433]],CONVERSION[\"Lambert_Conformal_Conic\",METHOD[\"Lambert_Conformal_Conic\"],PARAMETER[\"False_Easting\",6561666.666666666,LENGTHUNIT[\"Foot_US\",0.3048006096012192]],PARAMETER[\"False_Northing\",1640416.666666667,LENGTHUNIT[\"Foot_US\",0.3048006096012192]],PARAMETER[\"Central_Meridian\",-120.5],PARAMETER[\"Standard_Parallel_1\",37.06666666666667],PARAMETER[\"Standard_Parallel_2\",38.43333333333333],PARAMETER[\"Latitude_Of_Origin\",36.5]],CS[Cartesian,2],AXIS[\"Easting (X)\",east,ORDER[1]],AXIS[\"Northing (Y)\",north,ORDER[2]],LENGTHUNIT[\"Foot_US\",0.3048006096012192]],VERTCRS[\"North_American_Vertical_Datum_1988\",VDATUM[\"North_American_Vertical_Datum_1988\"],CS[vertical,1],AXIS[\"Gravity-related height (H)\",up,LENGTHUNIT[\"Meter\",1.0]]]]", 
+    "xyTolerance" : 0.0032808333333333331, 
+    "zTolerance" : 0.001, 
+    "mTolerance" : 0.001, 
+    "falseX" : -115860600, 
+    "falseY" : -93269500, 
+    "xyUnits" : 36787427.345686711, 
+    "falseZ" : -100000, 
+    "zUnits" : 10000, 
+    "falseM" : -100000, 
+    "mUnits" : 10000
+  }, 
+  "drawingInfo":{"renderer":{"type":"uniqueValue","field1":"NAME","uniqueValueGroups":[{"heading":"City Name","classes":[{"label":"CAMPBELL","description":"CAMPBELL","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[169,209,199,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["CAMPBELL"]]},{"label":"CUPERTINO","description":"CUPERTINO","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[200,143,201,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["CUPERTINO"]]},{"label":"GILROY","description":"GILROY","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[191,147,138,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["GILROY"]]},{"label":"LOS ALTOS","description":"LOS ALTOS","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[145,158,196,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["LOS ALTOS"]]},{"label":"LOS ALTOS HILLS","description":"LOS ALTOS HILLS","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[200,204,145,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["LOS ALTOS HILLS"]]},{"label":"LOS GATOS","description":"LOS GATOS","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[148,209,162,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["LOS GATOS"]]},{"label":"MILPITAS","description":"MILPITAS","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[209,171,199,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["MILPITAS"]]},{"label":"MONTE SERENO","description":"MONTE SERENO","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[191,183,159,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["MONTE SERENO"]]},{"label":"MORGAN HILL","description":"MORGAN HILL","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[151,185,204,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["MORGAN HILL"]]},{"label":"MOUNTAIN VIEW","description":"MOUNTAIN VIEW","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[194,212,180,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["MOUNTAIN VIEW"]]},{"label":"PALO ALTO","description":"PALO ALTO","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[204,145,162,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["PALO ALTO"]]},{"label":"SAN JOSE","description":"SAN JOSE","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[138,191,166,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["SAN JOSE"]]},{"label":"SANTA CLARA","description":"SANTA CLARA","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[159,138,191,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["SANTA CLARA"]]},{"label":"SANTA CRUZ COUNTY","description":"SANTA CRUZ COUNTY","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[162,194,141,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["SANTA CRUZ COUNTY"]]},{"label":"SARATOGA","description":"SARATOGA","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[194,165,214,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["SARATOGA"]]},{"label":"SUNNYVALE","description":"SUNNYVALE","symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[212,178,178,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"values":[["SUNNYVALE"]]}]}],"uniqueValueInfos":[{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[169,209,199,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"CAMPBELL","label":"CAMPBELL"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[200,143,201,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"CUPERTINO","label":"CUPERTINO"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[191,147,138,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"GILROY","label":"GILROY"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[145,158,196,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"LOS ALTOS","label":"LOS ALTOS"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[200,204,145,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"LOS ALTOS HILLS","label":"LOS ALTOS HILLS"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[148,209,162,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"LOS GATOS","label":"LOS GATOS"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[209,171,199,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"MILPITAS","label":"MILPITAS"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[191,183,159,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"MONTE SERENO","label":"MONTE SERENO"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[151,185,204,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"MORGAN HILL","label":"MORGAN HILL"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[194,212,180,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"MOUNTAIN VIEW","label":"MOUNTAIN VIEW"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[204,145,162,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"PALO ALTO","label":"PALO ALTO"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[138,191,166,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"SAN JOSE","label":"SAN JOSE"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[159,138,191,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"SANTA CLARA","label":"SANTA CLARA"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[162,194,141,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"SANTA CRUZ COUNTY","label":"SANTA CRUZ COUNTY"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[194,165,214,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"SARATOGA","label":"SARATOGA"},{"symbol":{"type":"esriSFS","style":"esriSFSSolid","color":[212,178,178,255],"outline":{"type":"esriSLS","style":"esriSLSSolid","color":[0,0,0,255],"width":1.5}},"value":"SUNNYVALE","label":"SUNNYVALE"}],"fieldDelimiter":",","authoringInfo":{"colorRamp":{"type":"multipart","colorRamps":[{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[138,142,191,255],"toColor":[138,142,191,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[207,207,147,255],"toColor":[207,207,147,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[143,201,201,255],"toColor":[143,201,201,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[209,155,161,255],"toColor":[209,155,161,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[212,150,212,255],"toColor":[212,150,212,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[143,196,150,255],"toColor":[143,196,150,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[204,182,214,255],"toColor":[204,182,214,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[194,178,153,255],"toColor":[194,178,153,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[147,178,207,255],"toColor":[147,178,207,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[194,214,180,255],"toColor":[194,214,180,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[196,147,182,255],"toColor":[196,147,182,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[183,159,209,255],"toColor":[183,159,209,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[178,212,201,255],"toColor":[178,212,201,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[149,191,162,255],"toColor":[149,191,162,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[191,153,138,255],"toColor":[191,153,138,255]},{"type":"algorithmic","algorithm":"esriCIELabAlgorithm","fromColor":[214,206,171,255],"toColor":[214,206,171,255]}]}}},"scaleSymbols":true,"transparency":40,"labelingInfo":null}, 
+  "allowGeometryUpdates" : true, 
+  "trueCurveSupportMode" : "OGC", 
+  "supportedCurveTypes" : [
+    "esriGeometryCircularArc"
+  ], 
+  "supportedTrueCurvePbfFeatureEncodings" : [
+    "esriCompressedShapeBuffer", 
+    "esriDefault"
+  ], 
+  "allowTrueCurvesUpdates" : true, 
+  "onlyAllowTrueCurveUpdatesByTrueCurveClients" : true, 
+  "hasAttachments" : false, 
+  "htmlPopupType" : "esriServerHTMLPopupTypeNone", 
+  "hasMetadata" : true, 
+  "hasM" : false, 
+  "hasZ" : false, 
+  "objectIdField" : "OBJECTID", 
+  "uniqueIdField" : 
+  {
+    "name" : "OBJECTID", 
+    "isSystemMaintained" : true
+  }, 
+  "globalIdField" : "", 
+  "typeIdField" : "NAME", 
+  "collation" : {
+    "locale" : "neutral", 
+    "caseSensitive" : false, 
+    "accentSensitive" : true
+  }, 
+  "fields" : [
+    {
+      "name" : "OBJECTID", 
+      "type" : "esriFieldTypeOID", 
+      "alias" : "OBJECTID", 
+      "sqlType" : "sqlTypeOther", 
+      "nullable" : false, 
+      "editable" : false, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "NAME", 
+      "type" : "esriFieldTypeString", 
+      "alias" : "NAME", 
+      "sqlType" : "sqlTypeOther", 
+      "length" : 50, 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "ACRES", 
+      "type" : "esriFieldTypeDouble", 
+      "alias" : "Acres", 
+      "sqlType" : "sqlTypeOther", 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "SQ_MILES", 
+      "type" : "esriFieldTypeDouble", 
+      "alias" : "Square Miles", 
+      "sqlType" : "sqlTypeOther", 
+      "nullable" : true, 
+      "editable" : true, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "Shape__Area", 
+      "type" : "esriFieldTypeDouble", 
+      "alias" : "Shape__Area", 
+      "sqlType" : "sqlTypeDouble", 
+      "nullable" : true, 
+      "editable" : false, 
+      "domain" : null, 
+      "defaultValue" : null
+    }, 
+    {
+      "name" : "Shape__Length", 
+      "type" : "esriFieldTypeDouble", 
+      "alias" : "Shape__Length", 
+      "sqlType" : "sqlTypeDouble", 
+      "nullable" : true, 
+      "editable" : false, 
+      "domain" : null, 
+      "defaultValue" : null
+    }
+  ], 
+  "indexes" : [
+    {
+      "name" : "PK__PLANNING__F4B70D85F67D2D56", 
+      "fields" : "OBJECTID", 
+      "isAscending" : true, 
+      "isUnique" : true, 
+      "description" : "", 
+      "indexType" : "Attribute"
+    }, 
+    {
+      "name" : "user_12788.PLANNINGOFFICEDATASERVICE2_CITY_LIMITS2_Shape_sidx", 
+      "fields" : "Shape", 
+      "isAscending" : true, 
+      "isUnique" : false, 
+      "description" : "", 
+      "indexType" : "Spatial"
+    }, 
+    {
+      "name" : "Shape__Area_Index", 
+      "fields" : "Shape__Area", 
+      "isAscending" : true, 
+      "isUnique" : false, 
+      "description" : "", 
+      "indexType" : "Attribute"
+    }, 
+    {
+      "name" : "Shape__Length_Index", 
+      "fields" : "Shape__Length", 
+      "isAscending" : true, 
+      "isUnique" : false, 
+      "description" : "", 
+      "indexType" : "Attribute"
+    }
+  ], 
+  "dateFieldsTimeReference" : {
+    "timeZone" : "UTC", 
+    "timeZoneIANA" : "Etc/UTC", 
+    "respectsDaylightSaving" : false
+  }, 
+  "preferredTimeReference" : null, 
+  "types" : [
+    {
+      "id" : "CAMPBELL", 
+      "name" : "CAMPBELL", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "CAMPBELL", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "CAMPBELL"
+            }
+          }
+        }
+      ]
+    }, 
+    {
+      "id" : "CUPERTINO", 
+      "name" : "CUPERTINO", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "CUPERTINO", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "CUPERTINO"
+            }
+          }
+        }
+      ]
+    }, 
+    {
+      "id" : "GILROY", 
+      "name" : "GILROY", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "GILROY", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "GILROY"
+            }
+          }
+        }
+      ]
+    }, 
+    {
+      "id" : "LOS ALTOS", 
+      "name" : "LOS ALTOS", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "LOS ALTOS", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "LOS ALTOS"
+            }
+          }
+        }
+      ]
+    }, 
+    {
+      "id" : "LOS ALTOS HILLS", 
+      "name" : "LOS ALTOS HILLS", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "LOS ALTOS HILLS", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "LOS ALTOS HILLS"
+            }
+          }
+        }
+      ]
+    }, 
+    {
+      "id" : "LOS GATOS", 
+      "name" : "LOS GATOS", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "LOS GATOS", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "LOS GATOS"
+            }
+          }
+        }
+      ]
+    }, 
+    {
+      "id" : "MILPITAS", 
+      "name" : "MILPITAS", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "MILPITAS", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "MILPITAS"
+            }
+          }
+        }
+      ]
+    }, 
+    {
+      "id" : "MONTE SERENO", 
+      "name" : "MONTE SERENO", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "MONTE SERENO", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "MONTE SERENO"
+            }
+          }
+        }
+      ]
+    }, 
+    {
+      "id" : "MORGAN HILL", 
+      "name" : "MORGAN HILL", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "MORGAN HILL", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "MORGAN HILL"
+            }
+          }
+        }
+      ]
+    }, 
+    {
+      "id" : "MOUNTAIN VIEW", 
+      "name" : "MOUNTAIN VIEW", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "MOUNTAIN VIEW", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "MOUNTAIN VIEW"
+            }
+          }
+        }
+      ]
+    }, 
+    {
+      "id" : "PALO ALTO", 
+      "name" : "PALO ALTO", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "PALO ALTO", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "PALO ALTO"
+            }
+          }
+        }
+      ]
+    }, 
+    {
+      "id" : "SAN JOSE", 
+      "name" : "SAN JOSE", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "SAN JOSE", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "SAN JOSE"
+            }
+          }
+        }
+      ]
+    }, 
+    {
+      "id" : "SANTA CLARA", 
+      "name" : "SANTA CLARA", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "SANTA CLARA", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "SANTA CLARA"
+            }
+          }
+        }
+      ]
+    }, 
+    {
+      "id" : "SANTA CRUZ COUNTY", 
+      "name" : "SANTA CRUZ COUNTY", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "SANTA CRUZ COUNTY", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "SANTA CRUZ COUNTY"
+            }
+          }
+        }
+      ]
+    }, 
+    {
+      "id" : "SARATOGA", 
+      "name" : "SARATOGA", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "SARATOGA", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "SARATOGA"
+            }
+          }
+        }
+      ]
+    }, 
+    {
+      "id" : "SUNNYVALE", 
+      "name" : "SUNNYVALE", 
+      "domains" : 
+      {
+      }, 
+      "templates" : [
+        {
+          "name" : "SUNNYVALE", 
+          "description" : "", 
+          "drawingTool" : "esriFeatureEditToolPolygon", 
+          "prototype" : {
+            "attributes" : {
+              "ACRES" : null, 
+              "SQ_MILES" : null, 
+              "NAME" : "SUNNYVALE"
+            }
+          }
+        }
+      ]
+    }
+  ], 
+  "templates" : [], 
+  "supportedQueryFormats" : "JSON, geoJSON, PBF", 
+  "supportedAppendFormats" : "sqlite,geoPackage,shapefile,filegdb,featureCollection,geojson,csv,excel,jsonl,featureService,pbf", 
+  "supportedAppendSourceFilterFormats" : "sqlite,geoPackage,shapefile,filegdb,featureService", 
+  "supportedExportFormats" : "csv,shapefile,sqlite,geoPackage,filegdb,featureCollection,geojson,kml,excel,parquet", 
+  "supportedConvertFileFormats" : "JSON,PBF,Parquet", 
+  "supportedConvertContentFormats" : "LayerEditCollection,FeatureCollection", 
+  "supportedSpatialRelationships" : [
+    "esriSpatialRelIntersects", 
+    "esriSpatialRelContains", 
+    "esriSpatialRelCrosses", 
+    "esriSpatialRelEnvelopeIntersects", 
+    "esriSpatialRelIndexIntersects", 
+    "esriSpatialRelOverlaps", 
+    "esriSpatialRelTouches", 
+    "esriSpatialRelWithin", 
+    "esriSpatialRelDisjoint", 
+    "esriSpatialRelRelation"
+  ], 
+  "guidFormat" : "", 
+  "supportsContingentValues" : true, 
+  "supportsEditingContingentValues" : true, 
+  "supportedContingentValuesFormats" : "JSON, PBF", 
+  "supportsFieldGroups" : true, 
+  "supportedSyncDataOptions" : 260, 
+  "hasStaticData" : false, 
+  "maxRecordCount" : 2000, 
+  "standardMaxRecordCount" : 2000, 
+  "maxIdsCount" : 400000, 
+  "standardMaxRecordCountNoGeometry" : 32000, 
+  "tileMaxRecordCount" : 4000, 
+  "maxRecordCountFactor" : 1, 
+  "capabilities" : "Query,Extract"
+}
