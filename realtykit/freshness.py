@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 
 from realtykit.analysis.constants import AGING_HOURS, FRESH_HOURS, LIVE_HOURS
@@ -27,12 +27,12 @@ def parse_http_date(value: str | None) -> datetime | None:
         dt = parsedate_to_datetime(value)
     except (TypeError, ValueError):
         try:
-            dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            dt = datetime.fromisoformat(value)
         except ValueError:
             return None
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
+    return dt.astimezone(UTC)
 
 
 def hours_since(value: str | datetime | None) -> float | None:
@@ -41,7 +41,7 @@ def hours_since(value: str | datetime | None) -> float | None:
     if isinstance(value, str):
         if len(value) == 10 and value[4] == "-":
             try:
-                dt = datetime.fromisoformat(value).replace(hour=23, minute=59, tzinfo=timezone.utc)
+                dt = datetime.fromisoformat(value).replace(hour=23, minute=59, tzinfo=UTC)
             except ValueError:
                 return None
         else:
@@ -49,7 +49,7 @@ def hours_since(value: str | datetime | None) -> float | None:
             if dt is None:
                 return None
     else:
-        dt = value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+        dt = value if value.tzinfo else value.replace(tzinfo=UTC)
     return max(0.0, (utc_now() - dt).total_seconds() / 3600.0)
 
 
@@ -145,12 +145,7 @@ def build_freshness(
     if prefer_source:
         relevant = [i.status for i in items if i.source == prefer_source]
     else:
-        relevant = [
-            i.status
-            for i in items
-            if i.provider not in skip
-            and i.status != "unavailable"
-        ]
+        relevant = [i.status for i in items if i.provider not in skip and i.status != "unavailable"]
     overall = worst(relevant)
     return FreshnessBlock(
         computed_at=utc_iso(),

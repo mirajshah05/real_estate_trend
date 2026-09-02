@@ -48,9 +48,7 @@ def metro_zscore_outliers(
                 metric=metric,
                 value=float(row["value"]),
                 score=round(z, 4),
-                reasons=[
-                    f"{kind_label}: {metric} z={z:.2f} vs metro cohort (|z|≥{z_abs})"
-                ],
+                reasons=[f"{kind_label}: {metric} z={z:.2f} vs metro cohort (|z|≥{z_abs})"],
             )
         )
     out.sort(key=lambda r: abs(r.score), reverse=True)
@@ -86,10 +84,14 @@ def listing_outliers(
                 reasons.append(f"price ≤ city median × {low_price_mult}")
                 score = max(score, city_median_price / max(price, 1.0))
         dom = row.get("dom")
-        if dom is not None and city_median_dom and city_median_dom > 0:
-            if dom >= city_median_dom * high_dom_mult:
-                reasons.append(f"DOM ≥ city median × {high_dom_mult}")
-                score = max(score, dom / city_median_dom)
+        if (
+            dom is not None
+            and city_median_dom
+            and city_median_dom > 0
+            and dom >= city_median_dom * high_dom_mult
+        ):
+            reasons.append(f"DOM ≥ city median × {high_dom_mult}")
+            score = max(score, dom / city_median_dom)
         if not reasons:
             continue
         out.append(

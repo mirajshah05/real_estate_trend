@@ -34,7 +34,9 @@ def correlation(
         )
     equity = macro_series("GSPC")
     mortgage = macro_series("MORTGAGE30US")
-    result = pearson_pairs(housing_pts[-window_weeks:], equity[-window_weeks:], mortgage[-window_weeks:])
+    result = pearson_pairs(
+        housing_pts[-window_weeks:], equity[-window_weeks:], mortgage[-window_weeks:]
+    )
     return CorrelationResponse(
         freshness=build_freshness(prefer_source="zillow:inv_week_metro"),
         geo_id=geo_id,

@@ -10,7 +10,14 @@ from realtykit.store.facts import macro_series
 
 router = APIRouter()
 
-_ALIAS = {"^GSPC": "GSPC", "^IXIC": "IXIC", "^DJI": "DJI", "GSPC": "GSPC", "IXIC": "IXIC", "DJI": "DJI"}
+_ALIAS = {
+    "^GSPC": "GSPC",
+    "^IXIC": "IXIC",
+    "^DJI": "DJI",
+    "GSPC": "GSPC",
+    "IXIC": "IXIC",
+    "DJI": "DJI",
+}
 
 
 def _scope_fields(series: list[tuple[str, float]], lookback_days: int) -> dict:

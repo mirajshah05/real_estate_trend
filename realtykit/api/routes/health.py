@@ -10,4 +10,6 @@ router = APIRouter()
 
 @router.get("/health", response_model=HealthResponse)
 def health(_ok: None = Depends(ensure_store)) -> HealthResponse:
-    return HealthResponse(ok=True, service="realtykit", version=__version__, freshness=build_freshness())
+    return HealthResponse(
+        ok=True, service="realtykit", version=__version__, freshness=build_freshness()
+    )

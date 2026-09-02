@@ -78,10 +78,12 @@ export default function MapPanel({
   zipFeatures = [],
   governmentAreas = [],
   listings,
+  sales = [],
   outlierIds,
   metric,
   onMetric,
   selected,
+  marketLabel,
   onSelect,
   onBounds,
   staleLayer,
@@ -95,6 +97,13 @@ export default function MapPanel({
     if (!values.length) return 0;
     return Math.max(...values.map((v) => Math.abs(v)));
   }, [values]);
+  const selectedMarket = useMemo(
+    () => selected && cities.find((city) => city.geo_id === selected.geo_id),
+    [cities, selected]
+  );
+  const selectedValue = selected
+    ? cityMetric(selected, metric) ?? cityMetric(selectedMarket || {}, metric)
+    : null;
 
   return (
     <div className="map-pane">
@@ -199,8 +208,26 @@ export default function MapPanel({
           >
             <Tooltip className="rk-tip" direction="top">
               <div>
+                {l.address && <><strong>{l.address}</strong><br /></>}
                 {l.price != null ? `$${l.price.toLocaleString("en-US")}` : "Listing"}
-                {l.dom != null ? ` · DOM ${l.dom}` : ""}
+                {l.dom != null ? ` · ${l.dom} listing days on market` : ""}
+              </div>
+            </Tooltip>
+          </CircleMarker>
+        ))}
+
+        {sales.map((sale) => (
+          <CircleMarker
+            key={sale.event_id}
+            center={[sale.lat, sale.lon]}
+            radius={5}
+            pathOptions={{ color: "#49c6b3", weight: 1.5, fillColor: "#49c6b3", fillOpacity: 0.8 }}
+          >
+            <Tooltip className="rk-tip" direction="top">
+              <div>
+                {sale.address && <><strong>{sale.address}</strong><br /></>}
+                {sale.price != null ? `$${sale.price.toLocaleString("en-US")}` : "Sale price unavailable"}
+                {sale.sale_date ? ` · recorded sale ${sale.sale_date}` : ""}
               </div>
             </Tooltip>
           </CircleMarker>
@@ -242,10 +269,13 @@ export default function MapPanel({
               </strong>
               <span>
                 {metricLabel(metric)}
-                {cityMetric(selected, metric) != null
-                  ? ` · ${formatTip(cityMetric(selected, metric), metric)}`
+                {selectedValue != null
+                  ? ` · ${formatTip(selectedValue, metric)}`
                   : " · no observation"}
               </span>
+              {selected.kind === "city" && marketLabel && marketLabel !== selected.name && (
+                <span>Boundary: {selected.name} · market statistics: {marketLabel}.</span>
+              )}
             </>
           ) : (
             <>
@@ -258,7 +288,10 @@ export default function MapPanel({
             </>
           )}
           {listings.length === 0 && (
-            <span> Listing pins empty until a listing API returns them.</span>
+            <span> Zoom to level 10+ for address-level listing pins.</span>
+          )}
+          {(listings.length > 0 || sales.length > 0) && (
+            <span> {listings.length} active homes · {sales.length} recorded sales in this viewport.</span>
           )}
           {selected && selected.kind === "city" && (
             <span>

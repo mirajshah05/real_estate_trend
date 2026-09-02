@@ -41,11 +41,11 @@ def pearson_pairs(
     pairs: list[CorrelationPair] = []
     ns: list[int] = []
 
-    def add(name_a: str, name_b: str, a: list[tuple[str, float]], b: list[tuple[str, float]]) -> None:
+    def add(
+        name_a: str, name_b: str, a: list[tuple[str, float]], b: list[tuple[str, float]]
+    ) -> None:
         if not a or not b:
-            pairs.append(
-                CorrelationPair(a=name_a, b=name_b, n=0, note="series_unavailable")
-            )
+            pairs.append(CorrelationPair(a=name_a, b=name_b, n=0, note="series_unavailable"))
             return
         aligned = align_weekly(a, b)
         n = len(aligned)
@@ -62,9 +62,7 @@ def pearson_pairs(
             return
         xs = [row[1][0] for row in aligned]
         ys = [row[1][1] for row in aligned]
-        pairs.append(
-            CorrelationPair(a=name_a, b=name_b, pearson=_pearson(xs, ys), n=n)
-        )
+        pairs.append(CorrelationPair(a=name_a, b=name_b, pearson=_pearson(xs, ys), n=n))
 
     add("housing_return", "gspc_return", housing_r, equity_r)
     add("housing_return", "mortgage_change", housing_r, mort_d)

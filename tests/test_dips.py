@@ -17,12 +17,16 @@ from tests.contract import (
 
 def test_dip_threshold_constants():
     const = constants_mod()
-    near = getattr(const, "DIP_NEAR_LOW_MAX", None) or getattr(
-        const, "DIP_NEAR_LOW_PCT", None
-    ) or getattr(const, "DIP_PCT_ABOVE_52W_LOW", None)
-    draw = getattr(const, "DIP_DRAWDOWN_MAX", None) or getattr(
-        const, "DIP_DRAWDOWN_PCT", None
-    ) or getattr(const, "DIP_DRAWDOWN_FROM_HIGH", None)
+    near = (
+        getattr(const, "DIP_NEAR_LOW_MAX", None)
+        or getattr(const, "DIP_NEAR_LOW_PCT", None)
+        or getattr(const, "DIP_PCT_ABOVE_52W_LOW", None)
+    )
+    draw = (
+        getattr(const, "DIP_DRAWDOWN_MAX", None)
+        or getattr(const, "DIP_DRAWDOWN_PCT", None)
+        or getattr(const, "DIP_DRAWDOWN_FROM_HIGH", None)
+    )
     if near is not None:
         assert float(near) == pytest.approx(DIP_NEAR_LOW_MAX)
     if draw is not None:

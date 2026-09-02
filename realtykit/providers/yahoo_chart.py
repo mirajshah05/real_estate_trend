@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from realtykit.freshness import classify
 from realtykit.ingest.http import CachedHttp
-from realtykit.log import utc_iso
+from realtykit.log import log, utc_iso
 from realtykit.providers.base import FetchOutcome
 from realtykit.settings import Settings, get_settings
 from realtykit.store.facts import upsert_macro
@@ -23,13 +23,17 @@ CHART = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
 
 
 def _to_date(ts: int) -> str:
-    return datetime.fromtimestamp(ts, tz=timezone.utc).date().isoformat()
+    return datetime.fromtimestamp(ts, tz=UTC).date().isoformat()
 
 
-def ingest(conn: sqlite3.Connection, settings: Settings | None = None, force: bool = False) -> list[FetchOutcome]:
+def ingest(
+    conn: sqlite3.Connection, settings: Settings | None = None, force: bool = False
+) -> list[FetchOutcome]:
     settings = settings or get_settings()
     http = CachedHttp(settings)
-    return [_one(conn, http, symbol, series_id, probe, force) for symbol, series_id, probe in SYMBOLS]
+    return [
+        _one(conn, http, symbol, series_id, probe, force) for symbol, series_id, probe in SYMBOLS
+    ]
 
 
 def _one(
@@ -139,8 +143,8 @@ def _one(
                 )
             if dpoints:
                 upsert_macro(dpoints, conn)
-    except Exception:  # noqa: BLE001
-        pass
+    except Exception as exc:  # noqa: BLE001
+        log("yahoo_daily_history_parse_failed", error_type=type(exc).__name__)
 
     last = meta.get("regularMarketPrice")
     status, _ = classify(observation_as_of=latest, cadence="daily")

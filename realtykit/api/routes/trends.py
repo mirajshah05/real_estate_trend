@@ -67,11 +67,7 @@ def _macro_points(
 
 def _freshness(names: list[str]):
     source_ids = {FACT_SOURCES[name] for name in names if name in FACT_SOURCES}
-    source_ids.update(
-        MACRO_SOURCES[MACRO_SERIES[name]]
-        for name in names
-        if name in MACRO_SERIES
-    )
+    source_ids.update(MACRO_SOURCES[MACRO_SERIES[name]] for name in names if name in MACRO_SERIES)
     rows = [source for source_id in source_ids if (source := get_source(source_id))]
     preferred = next(iter(source_ids), None)
     return build_freshness(rows=rows or None, prefer_source=preferred)

@@ -52,7 +52,7 @@ def test_freshness_shape():
     assert response.status_code == 200
     body = response.json()
     assert isinstance(body, dict)
-    block = body["freshness"] if "freshness" in body else body
+    block = body.get("freshness", body)
     assert isinstance(block, dict)
     if "overall" in block:
         assert str(block["overall"]) in KNOWN_FRESHNESS_STATUS
@@ -67,13 +67,9 @@ def test_freshness_shape():
         if "as_of" in src:
             assert src["as_of"] is None or isinstance(src["as_of"], str)
         if "observation_as_of" in src:
-            assert src["observation_as_of"] is None or isinstance(
-                src["observation_as_of"], str
-            )
+            assert src["observation_as_of"] is None or isinstance(src["observation_as_of"], str)
         if "http_last_modified" in src:
-            assert src["http_last_modified"] is None or isinstance(
-                src["http_last_modified"], str
-            )
+            assert src["http_last_modified"] is None or isinstance(src["http_last_modified"], str)
         if "status" in src:
             assert str(src["status"]) in KNOWN_FRESHNESS_STATUS
 

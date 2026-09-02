@@ -3,6 +3,23 @@
 Research verified on **2026-09-01** for Palo Alto, Mountain View, Sunnyvale,
 San Jose, Santa Clara, and adjacent San Mateo County communities.
 
+## Implementation status — 2026-09-02
+
+- RealtyKit now implements `/api/map/listings` and `/api/map/sales` through
+  RentCast, with six-hour/24-hour persistent caches respectively.
+- Sale records are normalized into `sale_events`; owner, mailing, assessment,
+  and tax fields are discarded before any response or cache write.
+- RentCast successful calls are persisted by calendar month, warn at 45/50,
+  and are blocked at 50. The account-wide provider dashboard remains the
+  authority for calls made outside this app.
+- The supplied RentCast key returned HTTP 403 on the official endpoint because
+  it is not associated with an active API subscription. The supplied ATTOM key
+  returned HTTP 401 while its trial application remained Pending. Both tests
+  were non-successful; neither produced property data.
+- The UI now distinguishes city boundaries from the San Jose metro aggregate.
+  For example, Sunnyvale's 247 new listings is the metro-wide weekly Zillow
+  observation, not a downloadable set of 247 Sunnyvale addresses.
+
 ## Decision
 
 Use separate acquisition lanes because a listing price and a recorded sale
@@ -16,10 +33,11 @@ price are different facts with different publishers:
    other licensed data feed through a participating broker. MLSListings is the
    local MLS for Santa Clara and San Mateo counties, refreshes every five
    minutes, and tracks listings through close with the final sold price.
-3. **Official sold-price validation — county assessor transfer lists:** import
-   Santa Clara and San Mateo assessor deliveries into a normalized
-   `sale_events` table. These official records are slower and not a substitute
-   for current listing data.
+3. **Official sold-price validation — verified county transfer lists:** import
+   Santa Clara's documented two-year sales list into `sale_events`. Treat San
+   Mateo's fee-page entry as an unverified lead until a sample and data
+   dictionary prove that it contains transaction consideration rather than
+   assessment-only fields.
 4. **Commercial recorded-sale fallback — ATTOM:** use only if RentCast coverage
    testing is insufficient and ATTOM's contract, retention, and display terms
    fit the application.
@@ -37,7 +55,7 @@ official machine-readable feeds.
 | Sunnyvale | Santa Clara | RentCast now; MLSListings when licensed | Santa Clara two-year sales list |
 | San Jose | Santa Clara | RentCast now; MLSListings when licensed | Santa Clara two-year sales list |
 | Santa Clara | Santa Clara | RentCast now; MLSListings when licensed | Santa Clara two-year sales list |
-| Menlo Park, Redwood City, San Mateo, and adjacent peninsula cities | San Mateo | RentCast now; MLSListings when licensed | San Mateo Property Sales History |
+| Menlo Park, Redwood City, San Mateo, and adjacent peninsula cities | San Mateo | RentCast now; MLSListings when licensed | Unverified county fee product; vendor/MLS until fields are confirmed |
 
 All five named South Bay cities are in Santa Clara County. San Mateo County
 parcel and sales files are useful for adjacent peninsula coverage but cannot
@@ -152,16 +170,15 @@ The public statute guarantees inspection, not an API or electronic bulk file.
 Until the county confirms an electronic delivery, this source must be labeled
 `manual_import`, `quarterly`, and unsuitable for the seven-day freshness SLA.
 
-### San Mateo County: official property sales history
+### San Mateo County: unverified fee-page lead
 
 San Mateo County publishes an [Assessment Data Fees](https://smcacre.gov/assessor/assessment-data-fees)
-page listing **Property Sales History — $305**. Contact the Assessor at
-`650-363-4500` and ask for format, fields, geographic filtering, observation
-date, delivery method, update cadence, reuse/display terms, and whether a
-recurring delivery is available. Ask that an order include APN, situs address,
-sale/transfer date, recording date and document number, consideration or
-indicated price, transfer type, property type/use code, and flags for nominal
-or non-arm's-length transactions.
+page listing **Property Sales History — $305**, but that fee-page label does
+not document the product's fields and does not establish that actual sale
+consideration is included. It must not be represented as a confirmed source of
+sold-house prices. Before purchasing, contact the Assessor at `650-363-4500`
+and request a sample plus data dictionary, format, observation date, update
+cadence, reuse terms, and an explicit answer about recorded consideration.
 
 The Recorder maintains public transaction documents and collects documentary
 transfer tax, but transfer tax is not a safe universal sale-price field: liens,
@@ -277,8 +294,9 @@ least 10 successful requests before pagination.
 3. If production needs exact/complete MLS inventory, email
    `data@mlslistings.com` and apply with an MLS Participant Broker for the feed
    appropriate to the intended public, registered-user, or internal use.
-4. Request the Santa Clara electronic two-year sales list and San Mateo
-   Property Sales History terms. Begin with manual dated imports.
+4. Request the Santa Clara electronic two-year sales list. Separately ask San
+   Mateo for a no-purchase sample and data dictionary before treating its fee
+   product as relevant to sold prices.
 5. Trial ATTOM only if RentCast sale history has material gaps; compare exact
    APN/address samples before signing a production contract.
 6. Add automated source-level coverage checks: result count, missing price/APN,

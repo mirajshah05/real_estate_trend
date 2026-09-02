@@ -25,7 +25,7 @@ def geocode(query: str, *, timeout: float = 8.0) -> list[dict]:
     except (httpx.HTTPError, ValueError):
         return []
 
-    matches = (((payload.get("result") or {}).get("addressMatches")) or [])
+    matches = ((payload.get("result") or {}).get("addressMatches")) or []
     results: list[dict] = []
     for match in matches[:5]:
         coords = match.get("coordinates") or {}

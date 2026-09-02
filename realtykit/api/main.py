@@ -2,14 +2,27 @@
 
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from contextlib import asynccontextmanager
-
-from realtykit.api.routes import correlation, freshness, government, health, ingest, kpis, map, outliers, research, search, stocks, trends
+from realtykit.api.routes import (
+    correlation,
+    freshness,
+    government,
+    health,
+    ingest,
+    kpis,
+    map,
+    outliers,
+    research,
+    search,
+    stocks,
+    trends,
+)
 from realtykit.settings import get_settings
 from realtykit.store.db import init_db
 from realtykit.store.seed import seed_if_empty
@@ -51,7 +64,12 @@ app.include_router(research.router, prefix="/api")
 async def _validation(request: Request, exc: RequestValidationError) -> JSONResponse:
     return JSONResponse(
         status_code=422,
-        content={"error": {"code": "unknown_metric" if "metric" in str(exc) else "invalid_request", "message": str(exc)}},
+        content={
+            "error": {
+                "code": "unknown_metric" if "metric" in str(exc) else "invalid_request",
+                "message": str(exc),
+            }
+        },
     )
 
 

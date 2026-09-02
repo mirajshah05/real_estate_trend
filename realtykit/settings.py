@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pydantic import Field
@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     )
     fred_api_key: str | None = Field(default=None, validation_alias="FRED_API_KEY")
     rentcast_api_key: str | None = Field(default=None, validation_alias="RENTCAST_API_KEY")
+    attom_api_key: str | None = Field(default=None, validation_alias="ATTOM_API_KEY")
+    rentcast_monthly_limit: int = Field(default=50, validation_alias="RENTCAST_MONTHLY_LIMIT")
+    rentcast_warning_at: int = Field(default=45, validation_alias="RENTCAST_WARNING_AT")
     user_agent: str = Field(
         default="RealtyKit/0.1 (local housing dashboard)",
         validation_alias="REALTYKIT_USER_AGENT",
@@ -57,7 +60,7 @@ class Settings(BaseSettings):
 
     @property
     def government_snapshot_dir(self) -> Path:
-        snapshot_date = datetime.now(timezone.utc).date().isoformat()
+        snapshot_date = datetime.now(UTC).date().isoformat()
         path = self.resources / "government" / snapshot_date
         path.mkdir(parents=True, exist_ok=True)
         return path
@@ -81,6 +84,10 @@ class Settings(BaseSettings):
     @property
     def has_rentcast_key(self) -> bool:
         return bool(self.rentcast_api_key)
+
+    @property
+    def has_attom_key(self) -> bool:
+        return bool(self.attom_api_key)
 
 
 def get_settings() -> Settings:

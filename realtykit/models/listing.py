@@ -9,6 +9,11 @@ class Listing(BaseModel):
     listing_id: str
     provider: str
     geo_id: str | None = None
+    address: str | None = None
+    city: str | None = None
+    state: str | None = None
+    zip_code: str | None = None
+    property_type: str | None = None
     lat: float
     lon: float
     price: float | None = None
@@ -22,6 +27,27 @@ class Listing(BaseModel):
     fetched_at: str | None = None
     outlier_score: float | None = None
     outlier_reasons: list[str] = Field(default_factory=list)
+
+
+class SaleEvent(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    event_id: str
+    provider: str
+    property_id: str
+    address: str | None = None
+    city: str | None = None
+    state: str | None = None
+    zip_code: str | None = None
+    lat: float
+    lon: float
+    sale_date: str
+    price: float | None = None
+    property_type: str | None = None
+    beds: float | None = None
+    baths: float | None = None
+    sqft: float | None = None
+    fetched_at: str
 
 
 def validate_listing(payload: dict) -> Listing:

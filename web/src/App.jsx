@@ -11,8 +11,11 @@ import {
   normalizeDips,
   normalizeGovernmentAreas,
   normalizeListings,
+  normalizeSales,
   normalizeOutliers,
   normalizeTrends,
+  kpiValue,
+  pickKpi,
 } from "./normalize.js";
 
 const TREND_METRICS =
@@ -40,6 +43,9 @@ function Dashboard() {
   const [governmentAreas, setGovernmentAreas] = useState([]);
   const [citiesError, setCitiesError] = useState(null);
   const [listings, setListings] = useState([]);
+  const [listingsMeta, setListingsMeta] = useState({ loading: false, error: null, usage: null, cached: false });
+  const [sales, setSales] = useState([]);
+  const [salesState, setSalesState] = useState({ loading: false, error: null, usage: null, cached: false });
   const [selected, setSelected] = useState(null);
   const [metric, setMetric] = useState("price_change_yoy");
   const [tab, setTab] = useState(location.pathname === "/sources" ? "sources" : "trends");
@@ -187,17 +193,35 @@ function Dashboard() {
   }, [routeGeo, cities, selected, loadGeo]);
 
   useEffect(() => {
+    setSales([]);
+    setSalesState({ loading: false, error: null, usage: null, cached: false });
     if (!bounds || bounds.zoom < 10) {
       setListings([]);
+      setListingsMeta({ loading: false, error: null, usage: null, cached: false });
       return;
     }
     let cancelled = false;
     const bbox = `${bounds.west},${bounds.south},${bounds.east},${bounds.north}`;
-    const path = `${paths.mapListings}?bbox=${encodeURIComponent(bbox)}`;
-    getApiOrFixture(path).then((res) => {
-      if (cancelled) return;
-      setListings(res.data ? normalizeListings(res.data) : []);
-    });
+    let timer = null;
+    if (tab === "homes") {
+      const path = `${paths.mapListings}?bbox=${encodeURIComponent(bbox)}`;
+      setListingsMeta((current) => ({ ...current, loading: true, error: null }));
+      timer = window.setTimeout(() => {
+        getApiOrFixture(path).then((res) => {
+          if (cancelled) return;
+          setListings(res.data ? normalizeListings(res.data) : []);
+          setListingsMeta({
+            loading: false,
+            error: res.error,
+            usage: res.data && res.data.usage,
+            cached: Boolean(res.data && res.data.cached),
+            note: (res.data && res.data.note) || "",
+          });
+        });
+      }, 500);
+    } else {
+      setListings([]);
+    }
     if (bounds.zoom >= 7) {
       getApiOrFixture(paths.mapZips(bbox)).then((res) => {
         if (cancelled) return;
@@ -208,7 +232,23 @@ function Dashboard() {
     }
     return () => {
       cancelled = true;
+      if (timer) window.clearTimeout(timer);
     };
+  }, [bounds, tab]);
+
+  const loadSales = useCallback(async () => {
+    if (!bounds || bounds.zoom < 10) return;
+    const bbox = `${bounds.west},${bounds.south},${bounds.east},${bounds.north}`;
+    setSalesState((current) => ({ ...current, loading: true, error: null }));
+    const res = await getApiOrFixture(paths.mapSales(bbox));
+    setSales(res.data ? normalizeSales(res.data) : []);
+    setSalesState({
+      loading: false,
+      error: res.error,
+      usage: res.data && res.data.usage,
+      cached: Boolean(res.data && res.data.cached),
+      note: (res.data && res.data.note) || "",
+    });
   }, [bounds]);
 
   const onRefresh = async () => {
@@ -249,6 +289,12 @@ function Dashboard() {
       : citiesError && !cities.length
         ? "Map points unavailable from /api/map/cities."
         : "";
+  const marketLabel = useMemo(() => {
+    if (!selected) return "United States";
+    const market = cities.find((city) => city.geo_id === selected.geo_id);
+    return market ? market.name : selected.name;
+  }, [cities, selected]);
+  const metroNewListings = kpiValue(pickKpi(kpis, ["new_listings"]));
 
   return (
     <div className="shell">
@@ -265,10 +311,12 @@ function Dashboard() {
           zipFeatures={zipFeatures}
           governmentAreas={governmentAreas}
           listings={listings}
+          sales={sales}
           outlierIds={outlierIds}
           metric={metric}
           onMetric={setMetric}
           selected={selected}
+          marketLabel={marketLabel}
           onSelect={onSelectCity}
           onBounds={setBounds}
           staleLayer={staleLayer}
@@ -279,6 +327,7 @@ function Dashboard() {
           tab={tab}
           onTab={onTab}
           selected={selected}
+          marketLabel={marketLabel}
           kpis={kpis}
           kpisState={kpisState}
           trends={trends}
@@ -293,6 +342,13 @@ function Dashboard() {
           researchState={researchState}
           freshness={freshness}
           onPickOutlier={onPickOutlier}
+          listings={listings}
+          listingsMeta={listingsMeta}
+          metroNewListings={metroNewListings}
+          sales={sales}
+          salesState={salesState}
+          onLoadSales={loadSales}
+          canLoadSales={Boolean(bounds && bounds.zoom >= 10)}
         />
       </div>
       <footer className="footer">

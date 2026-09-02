@@ -195,6 +195,8 @@ export const paths = {
   mapCities: "/api/map/cities",
   governmentAreas: "/api/map/government-areas",
   mapListings: "/api/map/listings",
+  mapSales: (bbox, lookbackDays = 365) =>
+    `/api/map/sales?bbox=${encodeURIComponent(bbox)}&lookback_days=${lookbackDays}&limit=500`,
   mapZips: (bbox) => `/api/map/zips?bbox=${encodeURIComponent(bbox)}`,
   search: (query) => `/api/search?q=${encodeURIComponent(query)}`,
   research: (geoId, months = 36) => {

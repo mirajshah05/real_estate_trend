@@ -5,16 +5,19 @@ import OutlierTable from "./OutlierTable.jsx";
 import ResearchPanel from "./ResearchPanel.jsx";
 import SourcesPanel from "./SourcesPanel.jsx";
 import StockDips from "./StockDips.jsx";
+import { ListingsPanel, SalesPanel } from "./PropertyTable.jsx";
 import { EmptyState, ErrorState, LoadingState, OfflinePanel } from "./StatusState.jsx";
 
 const TABS = [
-  { id: "trends", label: "Trends" },
-  { id: "overlay", label: "Overlay" },
-  { id: "corr", label: "Correlation" },
-  { id: "outliers", label: "Outliers" },
-  { id: "dips", label: "Dips" },
-  { id: "research", label: "Research" },
-  { id: "sources", label: "Sources" },
+  { id: "trends", label: "Trends", scope: "AREA" },
+  { id: "homes", label: "Homes", scope: "VIEWPORT" },
+  { id: "sales", label: "Sales", scope: "VIEWPORT" },
+  { id: "overlay", label: "Overlay", scope: "AREA × US" },
+  { id: "corr", label: "Correlation", scope: "AREA × US" },
+  { id: "outliers", label: "Outliers", scope: "AREA / US" },
+  { id: "dips", label: "Dips", scope: "US" },
+  { id: "research", label: "Research", scope: "AREA + US" },
+  { id: "sources", label: "Sources", scope: "GLOBAL" },
 ];
 
 export default function Dock({
@@ -22,6 +25,7 @@ export default function Dock({
   tab,
   onTab,
   selected,
+  marketLabel,
   kpis,
   kpisState,
   trends,
@@ -36,9 +40,21 @@ export default function Dock({
   researchState,
   freshness,
   onPickOutlier,
+  listings,
+  listingsMeta,
+  metroNewListings,
+  sales,
+  salesState,
+  onLoadSales,
+  canLoadSales,
 }) {
   const asOf = selected && (kpis && kpis.as_of);
   const geoLabel = selected ? selected.name : "United States";
+  const selectedTab = TABS.find((item) => item.id === tab);
+  const boundaryLabel = selected && selected.kind === "city" ? `${geoLabel} boundary` : geoLabel;
+  const areaContext = selected && selected.kind === "city" && marketLabel !== geoLabel
+    ? `${boundaryLabel} · market figures use ${marketLabel}`
+    : marketLabel || geoLabel;
 
   return (
     <aside className="dock">
@@ -52,17 +68,22 @@ export default function Dock({
             onClick={() => onTab(t.id)}
           >
             {t.label}
+            <small>{t.scope}</small>
           </button>
         ))}
       </nav>
       <div className="dock-body">
+        <div className="scope-bar">
+          <strong>{selectedTab ? selectedTab.scope : "AREA"}</strong>
+          <span>{scopeDescription(tab, areaContext)}</span>
+        </div>
         {apiOnline === false && <OfflinePanel />}
 
         {apiOnline !== false && tab === "trends" && (
           <>
             <h2>Inventory · DOM · new listings</h2>
             <p className="panel-caption">
-              {geoLabel}
+              {areaContext}
               {asOf ? ` · as of ${asOf}` : ""}
               {" · Zillow weekly when present"}
             </p>
@@ -75,10 +96,18 @@ export default function Dock({
           </>
         )}
 
+        {apiOnline !== false && tab === "homes" && (
+          <ListingsPanel listings={listings} meta={listingsMeta} metroNewListings={metroNewListings} />
+        )}
+
+        {apiOnline !== false && tab === "sales" && (
+          <SalesPanel sales={sales} state={salesState} onLoad={onLoadSales} canLoad={canLoadSales} />
+        )}
+
         {apiOnline !== false && tab === "overlay" && (
           <>
             <h2>Home value vs ^GSPC vs mortgage</h2>
-            <p className="panel-caption">Normalized 0–1 per series. Missing series are omitted.</p>
+            <p className="panel-caption">{areaContext} housing compared with national S&amp;P 500 and mortgage rates. Normalized 0–1 per series.</p>
             <PanelGate state={trendsState} empty="Overlay needs series from /api/trends.">
               <OverlayChart series={(trends && trends.series) || {}} />
               {trends && !hasOverlay(trends.series) && (
@@ -94,6 +123,7 @@ export default function Dock({
         {apiOnline !== false && tab === "corr" && (
           <>
             <h2>Correlation</h2>
+            <p className="panel-caption">{areaContext} housing versus national stocks and mortgage rates. Correlation is not causation.</p>
             <PanelGate state={corrState} empty="No correlation payload.">
               <CorrelationPanel corr={corr} />
             </PanelGate>
@@ -103,6 +133,7 @@ export default function Dock({
         {apiOnline !== false && tab === "outliers" && (
           <>
             <h2>Market outliers</h2>
+            <p className="panel-caption">Address-level outliers when viewport homes are cached; otherwise a US metro cohort.</p>
             <PanelGate state={outliersState} empty={null}>
               <OutlierTable
                 rows={outliers || []}
@@ -116,6 +147,7 @@ export default function Dock({
         {apiOnline !== false && tab === "dips" && (
           <>
             <h2>Stock dips</h2>
+            <p className="panel-caption">National S&amp;P 500 history; changing the selected city does not refresh this tab.</p>
             <PanelGate state={dipsState} empty="No dip payload from /api/stocks/dips.">
               <StockDips dips={dips} />
             </PanelGate>
@@ -125,7 +157,7 @@ export default function Dock({
         {apiOnline !== false && tab === "research" && (
           <>
             <h2>Area research</h2>
-            <ResearchPanel research={research} state={researchState} geoLabel={geoLabel} />
+            <ResearchPanel research={research} state={researchState} geoLabel={areaContext} />
           </>
         )}
 
@@ -141,6 +173,16 @@ export default function Dock({
       </div>
     </aside>
   );
+}
+
+function scopeDescription(tab, areaContext) {
+  if (tab === "homes" || tab === "sales") return "Refreshes from the visible map area, not the metro KPI selection.";
+  if (tab === "overlay" || tab === "corr") return `${areaContext} housing combined with national comparison series.`;
+  if (tab === "dips") return "National stock data; unchanged when a city is selected.";
+  if (tab === "sources") return "Application-wide provider status and freshness.";
+  if (tab === "outliers") return "Uses local homes when available; otherwise compares US metros.";
+  if (tab === "research") return `${areaContext}, with national context.`;
+  return `${areaContext}; refreshes when the selected market changes.`;
 }
 
 function hasHousing(series) {

@@ -27,10 +27,11 @@ def _status_text(result) -> str:
 
 def test_stale_hours_constant_is_168():
     const = constants_mod()
-    hours = getattr(const, "STALE_HOURS", None) or getattr(
-        const, "LISTING_STALE_HOURS", None
-    ) or getattr(const, "LISTING_SLA_HOURS", None) or getattr(
-        const, "FRESH_HOURS", None
+    hours = (
+        getattr(const, "STALE_HOURS", None)
+        or getattr(const, "LISTING_STALE_HOURS", None)
+        or getattr(const, "LISTING_SLA_HOURS", None)
+        or getattr(const, "FRESH_HOURS", None)
     )
     if hours is not None:
         assert float(hours) == STALE_HOURS

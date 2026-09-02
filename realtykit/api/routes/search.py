@@ -36,7 +36,9 @@ def search(
 ) -> SearchResponse:
     query = q.strip()
     if not query:
-        return SearchResponse(freshness=build_freshness(), query=q, note="Enter a city, ZIP code, or address.")
+        return SearchResponse(
+            freshness=build_freshness(), query=q, note="Enter a city, ZIP code, or address."
+        )
 
     conn = connect()
     try:
@@ -120,4 +122,9 @@ def search(
         note = "Address centered by the Census Geocoder; market metrics are shown for the nearest tracked metro."
     elif any(result.kind == "city" and result.market_geo_id for result in results):
         note = "Official city boundary selected; market metrics are shown for its tracked parent metro."
-    return SearchResponse(freshness=build_freshness(prefer_source="census:zcta_2024"), query=query, results=results, note=note)
+    return SearchResponse(
+        freshness=build_freshness(prefer_source="census:zcta_2024"),
+        query=query,
+        results=results,
+        note=note,
+    )

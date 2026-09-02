@@ -21,9 +21,7 @@ from tests.contract import (
 
 def test_min_correlation_n_is_12():
     const = constants_mod()
-    n = getattr(const, "MIN_CORRELATION_N", None) or getattr(
-        const, "CORRELATION_MIN_N", None
-    )
+    n = getattr(const, "MIN_CORRELATION_N", None) or getattr(const, "CORRELATION_MIN_N", None)
     if n is not None:
         assert int(n) == MIN_CORRELATION_N
 
@@ -56,7 +54,7 @@ def test_insufficient_history_when_n_under_12(series_bundle):
     assert len(xs) < MIN_CORRELATION_N
     try:
         result = invoke_correlate(xs, ys)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - compatibility contract accepts multiple implementations
         blob = f"{type(exc).__name__} {exc}".lower()
         assert "insufficient_history" in blob
         return

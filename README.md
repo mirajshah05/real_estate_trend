@@ -10,6 +10,8 @@ The project has two processes:
 - A Python/FastAPI backend that downloads, normalizes, caches, and serves data.
 - A React/Vite frontend with Leaflet maps and Recharts visualizations.
 
+![RealtyKit dashboard showing Sunnyvale boundary and San Jose metro trends](docs/assets/realtykit-dashboard.png)
+
 RealtyKit does not scrape listing-site HTML. Compass remains unavailable until
 a licensed API or MLS/RESO feed is configured. Zillow and Redfin integrations
 use their public research datasets rather than consumer-page scraping.
@@ -21,6 +23,8 @@ use their public research datasets rather than consumer-page scraping.
 - Typical home value, inventory, new-listing, and days-on-market trends.
 - Stock-market dips and housing/stock/mortgage correlation views.
 - Market and listing outlier flags.
+- Address-level active-home and recorded-sale viewport panels when RentCast is active.
+- Persistent provider-request accounting, a warning at 45/50, and a hard local cap at 50 successful RentCast requests per calendar month.
 - Source-level observation dates, file dates, and stale-data warnings.
 - Santa Clara County boundaries and parcel counts for Palo Alto, Santa Clara,
   Mountain View, Sunnyvale, and San Jose.
@@ -34,7 +38,7 @@ sale prices in the selected Santa Clara and San Mateo County areas, see
 [`docs/property-level-california.md`](docs/property-level-california.md). The
 short path uses one RentCast developer key for both active listings and property
 sale history; the authoritative production path uses a licensed MLSListings
-feed plus county assessor transfer files for validation.
+feed plus a county transfer list only where its price fields are documented.
 
 ## Technology
 
@@ -129,7 +133,8 @@ RealtyKit separates server-side credentials from browser configuration:
 |---|---:|---|---|
 | `VITE_CARTO_BASEMAP_KEY` | Recommended | Raster basemap tiles without the API-key watermark | [CARTO Basemaps key request](https://carto.com/basemaps/apikey/) |
 | `FRED_API_KEY` | Optional | Official FRED mortgage-rate API; public CSV and Freddie Mac fallbacks are attempted without it | [FRED API keys](https://fred.stlouisfed.org/docs/api/api_key.html) |
-| `RENTCAST_API_KEY` | Optional | Active listing pins and home-level listing outliers | [RentCast API dashboard and setup](https://developers.rentcast.io/reference/introduction) |
+| `RENTCAST_API_KEY` | Optional | Active listing pins, recorded sale events, and home-level outliers | [RentCast API dashboard and setup](https://developers.rentcast.io/reference/introduction) |
+| `ATTOM_API_KEY` | Optional / not yet wired as a fallback | Commercial property and recorded-sale trial evaluation | [ATTOM Developer Platform](https://api.developer.attomdata.com/) |
 | `CENSUS_API_KEY` | Not currently needed | Reserved for future Census Data API datasets | [Census Data API key request](https://api.census.gov/data/key_signup.html) |
 
 RentCast currently advertises a small free development allowance; review its
@@ -144,6 +149,7 @@ Copy `.env.example` to `.env` and fill only the values you need:
 ```dotenv
 FRED_API_KEY=
 RENTCAST_API_KEY=
+ATTOM_API_KEY=
 CENSUS_API_KEY=
 
 REALTYKIT_DATA_DIR=
@@ -151,6 +157,8 @@ REALTYKIT_RESOURCES_DIR=
 REALTYKIT_HOST=127.0.0.1
 REALTYKIT_PORT=8770
 REALTYKIT_CORS_ORIGINS=http://127.0.0.1:5173,http://localhost:5173
+RENTCAST_MONTHLY_LIMIT=50
+RENTCAST_WARNING_AT=45
 ```
 
 `REALTYKIT_DATA_DIR` changes where the SQLite database, raw market cache, and
@@ -255,7 +263,8 @@ For the government-only snapshot structure, see
 | Census | ZIP/metro geography and address geocoding | No for current features | Local geography remains; remote address search may be unavailable |
 | Santa Clara County GIS | Five target-city boundaries and parcel counts | No | Existing dated snapshot remains available |
 | San Mateo County GIS | Adjacent parcel/GIS reference | No | Source status records the failure |
-| RentCast | Active listing pins and listing-level outliers | Yes | Feature remains empty and clearly labeled |
+| RentCast | Active listing pins, sanitized property sale events, and listing-level outliers | Yes | Panel reports the provider error; six-hour listing and 24-hour sale caches avoid repeat calls |
+| ATTOM | Evaluated commercial recorded-sale fallback | Yes | Not called by normal app flow; pending/inactive trials remain documented, not silently substituted |
 | Compass | Planned licensed listing integration | No supported public key | Always reports unavailable; no scraping |
 
 ## Freshness model
@@ -300,13 +309,14 @@ or sale prices.
 
 ### Dashboard tabs
 
-- **Trends**: inventory, days on market, new listings, and value history.
-- **Overlay**: normalized housing, stock, and mortgage-rate series.
-- **Correlation**: aligned Pearson correlations with sample-size warnings.
-- **Outliers**: unusual metro or listing observations and reasons.
-- **Dips**: broad stock-index drawdowns and distance from recent lows.
-- **Research**: selected-area metrics, source provenance, context, and caveats.
-- **Sources**: source ledger, freshness, file dates, and provider limitations.
+- **Trends — AREA**: selected-metro inventory, mean days to pending, new listings, and value history.
+- **Homes — VIEWPORT**: address-level active listings in the visible map area. This is separate from Zillow's weekly metro new-listings aggregate.
+- **Sales — VIEWPORT**: on-demand property-record sale events in the visible area; owner and assessment fields are discarded.
+- **Overlay / Correlation — AREA × US**: selected-area housing with national stocks and mortgage rates.
+- **Outliers — AREA / US**: cached address-level homes when available, otherwise the national metro cohort.
+- **Dips — US**: broad stock-index drawdowns; city selection does not change it.
+- **Research — AREA + US**: selected-area metrics with national context.
+- **Sources — GLOBAL**: application-wide source ledger, freshness, file dates, and provider limitations.
 
 Correlation is descriptive, not evidence that stock prices or interest rates
 caused a housing-market change.
@@ -324,6 +334,7 @@ FastAPI generates live OpenAPI documentation at <http://127.0.0.1:8770/docs>.
 | `GET /api/map/government-areas` | Official target-city geometries and parcel counts |
 | `GET /api/map/zips?bbox=...` | ZIP inventory features inside a bounded viewport |
 | `GET /api/map/listings?bbox=...` | Active listing pins when RentCast is configured |
+| `GET /api/map/sales?bbox=...` | On-demand sanitized property-record sale events when RentCast is configured |
 | `GET /api/search?q=...` | Metro, city, ZIP, and address search |
 | `GET /api/research?geo_id=...` | Area research, provenance, context, and limitations |
 | `GET /api/kpis?geo_id=...` | Current KPI strip |
@@ -445,7 +456,34 @@ lsof -i tcp:5173 -P -n
 
 This is expected without `RENTCAST_API_KEY`. Add the key to the root `.env`,
 restart the backend, and refresh the `rentcast` provider. Viewport listing
-requests are made only after the map is zoomed into a bounded area.
+requests are made only after the map is zoomed into a bounded area and the
+**Homes** tab is open.
+
+If the Homes panel says the subscription is inactive, the key is saved but a
+RentCast API plan still needs to be activated in the provider dashboard. Only
+successful responses count toward the app's monthly counter. The counter is
+stored in `data/realtykit.db`, survives restarts, warns at 45, and blocks new
+live calls at 50. It cannot observe calls made by other applications, so the
+provider dashboard remains the account-wide authority.
+
+### ATTOM trial returns unauthorized
+
+An ATTOM application can expose a generated key before the trial is approved.
+A `401` response means the key is not active for the documented property API
+yet. Wait for the application status to become active; RealtyKit does not fall
+back to ATTOM or persist ATTOM records until its access and retention terms are
+confirmed.
+
+### The Central and East Coast have more map bubbles
+
+The database contains more distinct Zillow/Census metro areas in the central
+and eastern US, and those metros are geographically closer together. An older
+map query made this look worse by keeping only the 800 largest absolute price
+changes; it omitted 13 of California's 33 mapped metros, including San Jose.
+The current endpoint returns all 876 available nation/metro points, including
+all 33 California metros. At national zoom, overlap still makes the Northeast
+and Midwest look especially dense; zooming into California reveals the local
+points and official South Bay boundaries.
 
 ### Mortgage rates are unavailable
 
@@ -487,6 +525,9 @@ for `web/.env`.
 - Outlier scores are screening signals, not appraisal or investment advice.
 - The app is a research tool, not financial, legal, lending, or appraisal
   advice.
+
+The security review and residual risks are recorded in
+[`docs/security-audit-2026-09-02.md`](docs/security-audit-2026-09-02.md).
 
 Historical government-data research and the sale-event connector roadmap are
 documented in [`docs/research/04-government-data.md`](docs/research/04-government-data.md).

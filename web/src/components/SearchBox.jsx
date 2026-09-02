@@ -32,7 +32,7 @@ export default function SearchBox({ cities, onSelect, selectedId }) {
     const merged = [...local, ...remoteHits];
     const seen = new Set();
     return merged.filter((c) => {
-      const key = `${c.geo_id}|${c.label || c.name}`;
+      const key = `${c.label || `${c.name}, ${c.state || ""}`}`.trim().toLowerCase();
       if (seen.has(key)) return false;
       seen.add(key);
       return true;

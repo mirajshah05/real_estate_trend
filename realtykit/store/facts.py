@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import sqlite3
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 from realtykit.store.db import connect
 
@@ -87,9 +88,7 @@ def upsert_facts(rows: list[dict[str, Any]], conn: sqlite3.Connection | None = N
 def upsert_macro(rows: list[dict[str, Any]], conn: sqlite3.Connection | None = None) -> int:
     owned = conn is None
     conn = conn or connect()
-    tuples = [
-        (r["series_id"], r["ts"], r["value"], r["provider"], r["source_id"]) for r in rows
-    ]
+    tuples = [(r["series_id"], r["ts"], r["value"], r["provider"], r["source_id"]) for r in rows]
     conn.executemany(
         """
         INSERT INTO macro_series (series_id, ts, value, provider, source_id)
@@ -107,7 +106,9 @@ def upsert_macro(rows: list[dict[str, Any]], conn: sqlite3.Connection | None = N
     return len(tuples)
 
 
-def latest_period(metric: str, geo_id: str | None = None, conn: sqlite3.Connection | None = None) -> str | None:
+def latest_period(
+    metric: str, geo_id: str | None = None, conn: sqlite3.Connection | None = None
+) -> str | None:
     owned = conn is None
     conn = conn or connect()
     if geo_id:

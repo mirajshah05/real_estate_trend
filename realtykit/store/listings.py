@@ -27,9 +27,18 @@ def upsert_listings(rows: list[dict], conn: sqlite3.Connection) -> int:
         """,
         [
             (
-                row["listing_id"], row["provider"], row.get("geo_id"), row["lat"], row["lon"],
-                row.get("price"), row.get("beds"), row.get("baths"), row.get("sqft"),
-                row.get("dom"), row.get("status") or "active", row.get("listed_at"),
+                row["listing_id"],
+                row["provider"],
+                row.get("geo_id"),
+                row["lat"],
+                row["lon"],
+                row.get("price"),
+                row.get("beds"),
+                row.get("baths"),
+                row.get("sqft"),
+                row.get("dom"),
+                row.get("status") or "active",
+                row.get("listed_at"),
                 row.get("fetched_at"),
             )
             for row in rows

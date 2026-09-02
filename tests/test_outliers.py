@@ -48,11 +48,13 @@ def _flagged_geo_ids(result) -> set[str]:
         if explicit is False:
             continue
         keep = False
-        if explicit:
-            keep = True
-        elif score is not None and abs(float(score)) >= 2:
-            keep = True
-        elif ident and "outlier" in str(ident).lower():
+        if (
+            explicit
+            or score is not None
+            and abs(float(score)) >= 2
+            or ident
+            and "outlier" in str(ident).lower()
+        ):
             keep = True
         if keep and ident is not None:
             flagged.add(str(ident))

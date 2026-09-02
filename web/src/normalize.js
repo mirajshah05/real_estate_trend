@@ -241,6 +241,11 @@ export function normalizeListings(payload) {
   return list
     .map((l) => ({
       listing_id: asText(l.listing_id || l.id),
+      address: asText(l.address || l.formattedAddress),
+      city: asText(l.city),
+      state: asText(l.state),
+      zip_code: asText(l.zip_code || l.zipCode),
+      property_type: asText(l.property_type || l.propertyType),
       lat: asNumber(l.lat),
       lon: asNumber(l.lon ?? l.lng),
       price: asNumber(l.price),
@@ -256,6 +261,30 @@ export function normalizeListings(payload) {
         : [],
     }))
     .filter((l) => l.lat != null && l.lon != null);
+}
+
+export function normalizeSales(payload) {
+  const list = (payload && payload.sales) || [];
+  return list
+    .map((s) => ({
+      event_id: asText(s.event_id || s.id),
+      property_id: asText(s.property_id),
+      provider: asText(s.provider),
+      address: asText(s.address),
+      city: asText(s.city),
+      state: asText(s.state),
+      zip_code: asText(s.zip_code),
+      lat: asNumber(s.lat),
+      lon: asNumber(s.lon),
+      sale_date: asDateText(s.sale_date),
+      price: asNumber(s.price),
+      property_type: asText(s.property_type),
+      beds: asNumber(s.beds),
+      baths: asNumber(s.baths),
+      sqft: asNumber(s.sqft),
+      fetched_at: asDateText(s.fetched_at),
+    }))
+    .filter((s) => s.event_id && s.lat != null && s.lon != null);
 }
 
 const WEEKLY_HINT = /zillow|inventory|dom|listing|housing/i;

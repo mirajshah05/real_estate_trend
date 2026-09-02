@@ -1,6 +1,8 @@
 # Secrets and local configuration. Commit only the documented examples.
 .env
 .env.*
+.envrc
+.direnv/
 !.env.example
 **/.env
 **/.env.*
@@ -10,8 +12,15 @@
 *.p12
 *.pfx
 *.jks
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
 credentials*.json
 secrets*.json
+service-account*.json
+**/secrets*.yaml
+**/secrets*.yml
 .npmrc
 .pypirc
 data/.token
@@ -39,6 +48,8 @@ data/*.db
 data/*.db-*
 data/*.sqlite
 data/*.sqlite-*
+*.sqlite3
+*.sqlite3-*
 data/geo/
 
 # Frontend

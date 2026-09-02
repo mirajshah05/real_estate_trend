@@ -62,19 +62,65 @@ def apply_snapshot(snap: dict, conn) -> None:
     for city in snap.get("map_cities") or []:
         gid = city["geo_id"]
         if city.get("inventory") is not None:
-            facts.append(_fact(gid, housing_week, "inventory", city["inventory"], "zillow", "zillow:inv_week_metro"))
+            facts.append(
+                _fact(
+                    gid,
+                    housing_week,
+                    "inventory",
+                    city["inventory"],
+                    "zillow",
+                    "zillow:inv_week_metro",
+                )
+            )
         if city.get("price") is not None:
-            facts.append(_fact(gid, zhvi_month, "zhvi", city["price"], "zillow", "zillow:zhvi_metro"))
+            facts.append(
+                _fact(gid, zhvi_month, "zhvi", city["price"], "zillow", "zillow:zhvi_metro")
+            )
         if city.get("days_on_market") is not None:
-            facts.append(_fact(gid, housing_week, "days_on_market", city["days_on_market"], "zillow", "zillow:dom_week_metro"))
+            facts.append(
+                _fact(
+                    gid,
+                    housing_week,
+                    "days_on_market",
+                    city["days_on_market"],
+                    "zillow",
+                    "zillow:dom_week_metro",
+                )
+            )
         if city.get("new_listings") is not None:
-            facts.append(_fact(gid, housing_week, "new_listings", city["new_listings"], "zillow", "zillow:new_listings_week_metro"))
+            facts.append(
+                _fact(
+                    gid,
+                    housing_week,
+                    "new_listings",
+                    city["new_listings"],
+                    "zillow",
+                    "zillow:new_listings_week_metro",
+                )
+            )
         if city.get("mom") is not None:
-            facts.append(_fact(gid, zhvi_month, "price_change_mom", city["mom"], "zillow", "zillow:zhvi_metro"))
+            facts.append(
+                _fact(
+                    gid, zhvi_month, "price_change_mom", city["mom"], "zillow", "zillow:zhvi_metro"
+                )
+            )
         if city.get("yoy") is not None:
-            facts.append(_fact(gid, zhvi_month, "price_change_yoy", city["yoy"], "zillow", "zillow:zhvi_metro"))
+            facts.append(
+                _fact(
+                    gid, zhvi_month, "price_change_yoy", city["yoy"], "zillow", "zillow:zhvi_metro"
+                )
+            )
         if city.get("inventory_mom") is not None:
-            facts.append(_fact(gid, housing_week, "inventory_wow", city["inventory_mom"], "zillow", "zillow:inv_week_metro"))
+            facts.append(
+                _fact(
+                    gid,
+                    housing_week,
+                    "inventory_wow",
+                    city["inventory_mom"],
+                    "zillow",
+                    "zillow:inv_week_metro",
+                )
+            )
 
     for gid, series in (snap.get("trends") or {}).items():
         for metric, pts in series.items():

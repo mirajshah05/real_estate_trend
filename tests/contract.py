@@ -40,9 +40,7 @@ def first_attr(mod, names: Sequence[str], *, required: bool = True):
         if hasattr(mod, name):
             return getattr(mod, name)
     if required:
-        raise AttributeError(
-            f"{mod.__name__} has none of {list(names)}; Agent A must export one"
-        )
+        raise AttributeError(f"{mod.__name__} has none of {list(names)}; Agent A must export one")
     return None
 
 
@@ -290,8 +288,7 @@ def freshness_fn():
             errors.append(str(exc))
     raise ImportError(
         "no freshness classifier found; Agent A must export "
-        "classify_source (or alias) from models.freshness. "
-        + " | ".join(errors)
+        "classify_source (or alias) from models.freshness. " + " | ".join(errors)
     )
 
 
@@ -434,9 +431,7 @@ def invoke_outliers_geo(rows: Iterable[Mapping[str, Any]]) -> Any:
     attempts = (
         lambda: call_flex(fn, material),
         lambda: call_flex(fn, material, metric="value"),
-        lambda: call_flex(
-            fn, rows=material, metros=material, values=values, metric="value"
-        ),
+        lambda: call_flex(fn, rows=material, metros=material, values=values, metric="value"),
         lambda: call_flex(fn, values),
     )
     last_err: Exception | None = None

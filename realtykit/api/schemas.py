@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from realtykit.models.analysis import CorrelationPair, OutlierRow
 from realtykit.models.freshness import FreshnessBlock
-from realtykit.models.listing import Listing
+from realtykit.models.listing import Listing, SaleEvent
 from realtykit.models.market import KpiPoint
 
 METRICS = frozenset(
@@ -83,9 +83,36 @@ class MapZipsResponse(ForbidModel):
     note: str = ""
 
 
+class ProviderUsage(ForbidModel):
+    provider: str
+    period: str
+    attempted_requests: int = 0
+    successful_requests: int = 0
+    reserved_requests: int = 0
+    limit: int | None = None
+    warning_at: int | None = None
+    remaining: int | None = None
+    alert: str | None = None
+    tracked_since: str | None = None
+    last_status: int | None = None
+    external_usage_unknown: bool = True
+
+
 class MapListingsResponse(ForbidModel):
     freshness: FreshnessBlock
     listings: list[Listing] = Field(default_factory=list)
+    usage: ProviderUsage | None = None
+    cached: bool = False
+    note: str = ""
+
+
+class MapSalesResponse(ForbidModel):
+    freshness: FreshnessBlock
+    sales: list[SaleEvent] = Field(default_factory=list)
+    usage: ProviderUsage | None = None
+    cached: bool = False
+    lookback_days: int = 365
+    note: str = ""
 
 
 class GovernmentArea(ForbidModel):

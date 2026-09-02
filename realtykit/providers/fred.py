@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 import io
 import sqlite3
-from datetime import datetime
+from datetime import UTC, datetime
 
 import httpx
 
@@ -22,7 +22,9 @@ PMMS_URL = "https://www.freddiemac.com/pmms/docs/PMMS_history.csv"
 API_URL = "https://api.stlouisfed.org/fred/series/observations"
 
 
-def ingest(conn: sqlite3.Connection, settings: Settings | None = None, force: bool = False) -> FetchOutcome:
+def ingest(
+    conn: sqlite3.Connection, settings: Settings | None = None, force: bool = False
+) -> FetchOutcome:
     settings = settings or get_settings()
     http = CachedHttp(settings)
     fetched_at = utc_iso()
@@ -43,7 +45,9 @@ def ingest(conn: sqlite3.Connection, settings: Settings | None = None, force: bo
                 "file_type": "json",
                 "sort_order": "asc",
             }
-            with httpx.Client(timeout=FRED_TIMEOUT, headers={"User-Agent": settings.user_agent}) as client:
+            with httpx.Client(
+                timeout=FRED_TIMEOUT, headers={"User-Agent": settings.user_agent}
+            ) as client:
                 resp = client.get(API_URL, params=params)
                 resp.raise_for_status()
                 payload = resp.json()
@@ -72,7 +76,8 @@ def ingest(conn: sqlite3.Connection, settings: Settings | None = None, force: bo
             note_bits.append("loaded via official FRED API using configured key")
         except Exception as exc:  # noqa: BLE001
             note_bits.append("API fail")
-            log("fred_api_failed", error=str(exc))
+            status = exc.response.status_code if isinstance(exc, httpx.HTTPStatusError) else None
+            log("fred_api_failed", error_type=type(exc).__name__, status=status)
 
     if text is None:
         try:
@@ -140,12 +145,16 @@ def ingest(conn: sqlite3.Connection, settings: Settings | None = None, force: bo
     value_key = None
     date_key = None
     if reader.fieldnames:
-        date_key = next((k for k in reader.fieldnames if k.strip().lower() in {"date", "week"}), None)
+        date_key = next(
+            (k for k in reader.fieldnames if k.strip().lower() in {"date", "week"}), None
+        )
         value_key = next(
             (
                 k
                 for k in reader.fieldnames
-                if k != date_key and "30" in k.lower() and ("yr" in k.lower() or "year" in k.lower())
+                if k != date_key
+                and "30" in k.lower()
+                and ("yr" in k.lower() or "year" in k.lower())
             ),
             None,
         ) or next((k for k in reader.fieldnames if k != date_key), None)
@@ -172,7 +181,9 @@ def ingest(conn: sqlite3.Connection, settings: Settings | None = None, force: bo
         )
     if points:
         upsert_macro(points, conn)
-    status, _ = classify(observation_as_of=latest, cadence="weekly", http_last_modified=last_modified)
+    status, _ = classify(
+        observation_as_of=latest, cadence="weekly", http_last_modified=last_modified
+    )
     out = FetchOutcome(
         source_id="fred:MORTGAGE30US",
         provider="fred",
@@ -205,7 +216,7 @@ def _normalise_date(value: str | None) -> str | None:
         pass
     for fmt in ("%m/%d/%Y", "%m/%d/%y", "%B %d, %Y"):
         try:
-            return datetime.strptime(value, fmt).date().isoformat()
+            return datetime.strptime(value, fmt).replace(tzinfo=UTC).date().isoformat()
         except ValueError:
             continue
     return None

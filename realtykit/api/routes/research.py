@@ -44,7 +44,9 @@ METRIC_LABELS = {
 PROVIDER_PRIORITY = {"redfin": 0, "zillow": 1, "fhfa": 2}
 
 
-def _fact_rows(conn: sqlite3.Connection, geo_id: str, *, national: bool = False) -> list[sqlite3.Row]:
+def _fact_rows(
+    conn: sqlite3.Connection, geo_id: str, *, national: bool = False
+) -> list[sqlite3.Row]:
     return conn.execute(
         """
         SELECT f.*, s.provider AS source_provider, s.dataset, s.url,
@@ -154,7 +156,9 @@ def research(
             if row["value"] is not None
         ]
 
-    national_context = [_metric(rows[-1] if rows else None, metric) for metric, rows in national.items()]
+    national_context = [
+        _metric(rows[-1] if rows else None, metric) for metric, rows in national.items()
+    ]
     national_context.sort(key=lambda item: AREA_METRICS.index(item.metric))
 
     source_rows: list[ResearchSource] = []
@@ -162,7 +166,9 @@ def research(
     source_conn = connect()
     try:
         for source_id in sorted(source_ids):
-            row = source_conn.execute("SELECT * FROM sources WHERE source_id = ?", (source_id,)).fetchone()
+            row = source_conn.execute(
+                "SELECT * FROM sources WHERE source_id = ?", (source_id,)
+            ).fetchone()
             if row:
                 all_source_rows.append(row)
     finally:
@@ -173,12 +179,16 @@ def research(
     zhvi = series.get("zhvi", [])
     if len(zhvi) >= 2 and zhvi[-2].v:
         change = (zhvi[-1].v - zhvi[-2].v) / zhvi[-2].v
-        insights.append(f"Typical home value changed {change:+.1%} over the latest stored observation.")
+        insights.append(
+            f"Typical home value changed {change:+.1%} over the latest stored observation."
+        )
     inventory = series.get("inventory", [])
     if len(inventory) >= 2 and inventory[-2].v:
         change = (inventory[-1].v - inventory[-2].v) / inventory[-2].v
         insights.append(f"Inventory changed {change:+.1%} over the latest stored observation.")
-    if metrics and not any(item.metric == "median_sale_price" and item.value is not None for item in metrics):
+    if metrics and not any(
+        item.metric == "median_sale_price" and item.value is not None for item in metrics
+    ):
         insights.append(
             "No actual sold-home price ledger is cached for this area; value estimates "
             "and indexes are not sale prices."
@@ -215,10 +225,14 @@ def research(
         insights=insights,
         disclaimers=[
             "Zillow ZHVI is an estimated home value, not a transaction price.",
-            "Redfin sale prices and homes sold are aggregate market statistics; the public "
-            "Redfin feed is not a parcel ledger.",
+            (
+                "Redfin sale prices and homes sold are aggregate market statistics; the public "
+                "Redfin feed is not a parcel ledger."
+            ),
             "Mortgage rates are a national survey series and are not a borrower-specific quote.",
-            "Observation dates and publication/file dates are kept separately so delayed "
-            "releases are not presented as live data.",
+            (
+                "Observation dates and publication/file dates are kept separately so delayed "
+                "releases are not presented as live data."
+            ),
         ],
     )

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -20,7 +20,7 @@ if str(ROOT) not in sys.path:
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 # Research compile clock from docs/research/03-data-extraction.md
-NOW_UTC = datetime(2026, 8, 31, 12, 0, 0, tzinfo=timezone.utc)
+NOW_UTC = datetime(2026, 8, 31, 12, 0, 0, tzinfo=UTC)
 
 
 @pytest.fixture

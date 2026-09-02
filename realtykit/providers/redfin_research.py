@@ -39,7 +39,9 @@ METRIC_MAP = {
 }
 
 
-def ingest(conn: sqlite3.Connection, settings: Settings | None = None, force: bool = False) -> FetchOutcome:
+def ingest(
+    conn: sqlite3.Connection, settings: Settings | None = None, force: bool = False
+) -> FetchOutcome:
     settings = settings or get_settings()
     http = CachedHttp(settings)
     fetched_at = utc_iso()

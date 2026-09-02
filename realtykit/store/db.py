@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sqlite3
 from pathlib import Path
 
@@ -72,6 +73,45 @@ CREATE TABLE IF NOT EXISTS listings (
   fetched_at       TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS sale_events (
+  event_id          TEXT PRIMARY KEY,
+  provider          TEXT NOT NULL,
+  property_id       TEXT NOT NULL,
+  address           TEXT,
+  city              TEXT,
+  state             TEXT,
+  zip_code          TEXT,
+  lat               REAL NOT NULL,
+  lon               REAL NOT NULL,
+  sale_date         TEXT NOT NULL,
+  price             REAL,
+  property_type     TEXT,
+  beds              REAL,
+  baths             REAL,
+  sqft              REAL,
+  fetched_at        TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS provider_usage (
+  provider            TEXT NOT NULL,
+  period              TEXT NOT NULL,
+  attempted_requests  INTEGER NOT NULL DEFAULT 0,
+  successful_requests INTEGER NOT NULL DEFAULT 0,
+  reserved_requests   INTEGER NOT NULL DEFAULT 0,
+  last_status         INTEGER,
+  tracked_since       TEXT NOT NULL,
+  updated_at          TEXT NOT NULL,
+  PRIMARY KEY (provider, period)
+);
+
+CREATE TABLE IF NOT EXISTS provider_cache (
+  provider          TEXT NOT NULL,
+  cache_key         TEXT NOT NULL,
+  payload_json      TEXT NOT NULL,
+  fetched_at        TEXT NOT NULL,
+  PRIMARY KEY (provider, cache_key)
+);
+
 CREATE TABLE IF NOT EXISTS ingest_runs (
   run_id           TEXT PRIMARY KEY,
   started_at       TEXT NOT NULL,
@@ -100,6 +140,8 @@ CREATE TABLE IF NOT EXISTS government_areas (
 CREATE INDEX IF NOT EXISTS idx_facts_metric_period ON market_facts (metric, period_end);
 CREATE INDEX IF NOT EXISTS idx_facts_geo ON market_facts (geo_id, period_end);
 CREATE INDEX IF NOT EXISTS idx_listings_geo ON listings (geo_id);
+CREATE INDEX IF NOT EXISTS idx_sale_events_date ON sale_events (sale_date);
+CREATE INDEX IF NOT EXISTS idx_sale_events_location ON sale_events (lat, lon);
 CREATE INDEX IF NOT EXISTS idx_government_areas_county ON government_areas (state, county);
 """
 
@@ -113,10 +155,21 @@ def connect(settings: Settings | None = None) -> sqlite3.Connection:
     conn.execute("PRAGMA foreign_keys = ON")
     conn.execute("PRAGMA journal_mode = WAL")
     conn.executescript(SCHEMA)
+    usage_cols = {r[1] for r in conn.execute("PRAGMA table_info(provider_usage)").fetchall()}
+    if "reserved_requests" not in usage_cols:
+        conn.execute(
+            "ALTER TABLE provider_usage ADD COLUMN reserved_requests INTEGER NOT NULL DEFAULT 0"
+        )
+        conn.commit()
+    for private_path in (path, Path(f"{path}-wal"), Path(f"{path}-shm")):
+        if private_path.exists():
+            os.chmod(private_path, 0o600)
     return conn
 
 
-def init_db(conn: sqlite3.Connection | None = None, settings: Settings | None = None) -> sqlite3.Connection:
+def init_db(
+    conn: sqlite3.Connection | None = None, settings: Settings | None = None
+) -> sqlite3.Connection:
     owned = conn is None
     conn = conn or connect(settings)
     conn.executescript(SCHEMA)

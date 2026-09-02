@@ -42,7 +42,9 @@ def _load_compact_msa(settings: Settings) -> list[dict]:
     return data.get("metros") or []
 
 
-def ingest(conn: sqlite3.Connection, settings: Settings | None = None, force: bool = False) -> list[FetchOutcome]:
+def ingest(
+    conn: sqlite3.Connection, settings: Settings | None = None, force: bool = False
+) -> list[FetchOutcome]:
     settings = settings or get_settings()
     http = CachedHttp(settings)
     return [
@@ -51,7 +53,9 @@ def ingest(conn: sqlite3.Connection, settings: Settings | None = None, force: bo
     ]
 
 
-def _zcta(conn: sqlite3.Connection, http: CachedHttp, settings: Settings, force: bool) -> FetchOutcome:
+def _zcta(
+    conn: sqlite3.Connection, http: CachedHttp, settings: Settings, force: bool
+) -> FetchOutcome:
     fetched_at = utc_iso()
     try:
         cached = http.get_cached(ZCTA_URL, "census/2024_Gaz_zcta_national.zip", force=force)
@@ -112,7 +116,9 @@ def _zcta(conn: sqlite3.Connection, http: CachedHttp, settings: Settings, force:
     return out
 
 
-def _msa(conn: sqlite3.Connection, http: CachedHttp, settings: Settings, force: bool) -> FetchOutcome:
+def _msa(
+    conn: sqlite3.Connection, http: CachedHttp, settings: Settings, force: bool
+) -> FetchOutcome:
     """Prefer Census CBSA gazetteer; always apply compact JSON so metros can map."""
     fetched_at = utc_iso()
     compact = _load_compact_msa(settings)
@@ -120,7 +126,9 @@ def _msa(conn: sqlite3.Connection, http: CachedHttp, settings: Settings, force: 
     if compact:
         existing = {
             r["name"]: r
-            for r in conn.execute("SELECT geo_id, name FROM geos WHERE level IN ('metro','nation')").fetchall()
+            for r in conn.execute(
+                "SELECT geo_id, name FROM geos WHERE level IN ('metro','nation')"
+            ).fetchall()
         }
         updates = []
         for m in compact:
@@ -206,10 +214,9 @@ def _match_cbsa(conn: sqlite3.Connection, cbsa: list[tuple[str, float, float]]) 
         hit = None
         for cbsa_name, lat, lon in cbsa:
             low = cbsa_name.lower()
-            if city_l in low.split("-")[0] or low.startswith(city_l):
-                if state_l in low:
-                    hit = (lat, lon)
-                    break
+            if (city_l in low.split("-")[0] or low.startswith(city_l)) and state_l in low:
+                hit = (lat, lon)
+                break
         if hit:
             out.append(
                 {

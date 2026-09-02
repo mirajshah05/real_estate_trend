@@ -76,7 +76,9 @@ class CachedHttp:
         return path
 
     def head(self, url: str, *, timeout: float = DEFAULT_TIMEOUT) -> httpx.Response:
-        with httpx.Client(timeout=timeout, follow_redirects=True, headers=self._headers()) as client:
+        with httpx.Client(
+            timeout=timeout, follow_redirects=True, headers=self._headers()
+        ) as client:
             return client.head(url)
 
     def get_cached(
@@ -104,63 +106,65 @@ class CachedHttp:
         last_error: Exception | None = None
         for attempt in range(retries):
             try:
-                with httpx.Client(timeout=timeout, follow_redirects=True, headers=headers) as client:
-                    with client.stream("GET", url) as resp:
-                        if resp.status_code == 304 and dest.exists():
-                            log("http_not_modified", url=url, dest=str(dest))
-                            return CachedFetch(
-                                path=dest,
-                                status_code=304,
-                                not_modified=True,
-                                etag=meta.get("etag"),
-                                last_modified=meta.get("last_modified"),
-                                content_sha256=meta.get("content_sha256") or sha256_file(dest),
-                                bytes=dest.stat().st_size,
-                                fetched_at=utc_iso(),
-                                from_cache=True,
-                            )
-                        resp.raise_for_status()
-                        length = resp.headers.get("Content-Length")
-                        if max_bytes and length and int(length) > max_bytes:
-                            raise ValueError(f"object {int(length)} bytes exceeds cap {max_bytes}")
-                        tmp = dest.with_suffix(dest.suffix + ".part")
-                        written = 0
-                        with tmp.open("wb") as fh:
-                            for chunk in resp.iter_bytes():
-                                written += len(chunk)
-                                if max_bytes and written > max_bytes:
-                                    tmp.unlink(missing_ok=True)
-                                    raise ValueError(f"download exceeded cap {max_bytes}")
-                                fh.write(chunk)
-                        tmp.replace(dest)
-                        etag = resp.headers.get("ETag")
-                        last_modified = resp.headers.get("Last-Modified")
-                        digest = sha256_file(dest)
-                        new_meta = {
-                            "url": url,
-                            "etag": etag,
-                            "last_modified": last_modified,
-                            "content_sha256": digest,
-                            "bytes": dest.stat().st_size,
-                            "fetched_at": utc_iso(),
-                        }
-                        write_meta(dest, new_meta)
-                        log("http_fetched", url=url, bytes=new_meta["bytes"], dest=str(dest))
+                with (
+                    httpx.Client(timeout=timeout, follow_redirects=True, headers=headers) as client,
+                    client.stream("GET", url) as resp,
+                ):
+                    if resp.status_code == 304 and dest.exists():
+                        log("http_not_modified", url=url, dest=str(dest))
                         return CachedFetch(
                             path=dest,
-                            status_code=resp.status_code,
-                            not_modified=False,
-                            etag=etag,
-                            last_modified=last_modified,
-                            content_sha256=digest,
-                            bytes=new_meta["bytes"],
-                            fetched_at=new_meta["fetched_at"],
-                            from_cache=False,
+                            status_code=304,
+                            not_modified=True,
+                            etag=meta.get("etag"),
+                            last_modified=meta.get("last_modified"),
+                            content_sha256=meta.get("content_sha256") or sha256_file(dest),
+                            bytes=dest.stat().st_size,
+                            fetched_at=utc_iso(),
+                            from_cache=True,
                         )
+                    resp.raise_for_status()
+                    length = resp.headers.get("Content-Length")
+                    if max_bytes and length and int(length) > max_bytes:
+                        raise ValueError(f"object {int(length)} bytes exceeds cap {max_bytes}")
+                    tmp = dest.with_suffix(dest.suffix + ".part")
+                    written = 0
+                    with tmp.open("wb") as fh:
+                        for chunk in resp.iter_bytes():
+                            written += len(chunk)
+                            if max_bytes and written > max_bytes:
+                                tmp.unlink(missing_ok=True)
+                                raise ValueError(f"download exceeded cap {max_bytes}")
+                            fh.write(chunk)
+                    tmp.replace(dest)
+                    etag = resp.headers.get("ETag")
+                    last_modified = resp.headers.get("Last-Modified")
+                    digest = sha256_file(dest)
+                    new_meta = {
+                        "url": url,
+                        "etag": etag,
+                        "last_modified": last_modified,
+                        "content_sha256": digest,
+                        "bytes": dest.stat().st_size,
+                        "fetched_at": utc_iso(),
+                    }
+                    write_meta(dest, new_meta)
+                    log("http_fetched", url=url, bytes=new_meta["bytes"], dest=str(dest))
+                    return CachedFetch(
+                        path=dest,
+                        status_code=resp.status_code,
+                        not_modified=False,
+                        etag=etag,
+                        last_modified=last_modified,
+                        content_sha256=digest,
+                        bytes=new_meta["bytes"],
+                        fetched_at=new_meta["fetched_at"],
+                        from_cache=False,
+                    )
             except (httpx.HTTPError, ValueError) as exc:
                 last_error = exc
                 log("http_retry", url=url, attempt=attempt + 1, error=str(exc))
-                time.sleep(backoff ** attempt)
+                time.sleep(backoff**attempt)
 
         if dest.exists():
             log("http_last_good", url=url, dest=str(dest), error=str(last_error))

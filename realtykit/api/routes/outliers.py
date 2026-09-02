@@ -47,7 +47,11 @@ def outliers(
                 rows=found[:limit],
             )
 
-    wanted = metric if metric in {"inventory_wow", "days_on_market", "zhvi_mom", "price_change_mom"} else "inventory_wow"
+    wanted = (
+        metric
+        if metric in {"inventory_wow", "days_on_market", "zhvi_mom", "price_change_mom"}
+        else "inventory_wow"
+    )
     store_metric = "price_change_mom" if wanted == "zhvi_mom" else wanted
     facts = latest_facts(store_metric)
     cohort = [

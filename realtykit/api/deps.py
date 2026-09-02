@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import Query
+from fastapi import HTTPException, Query, Request
 
 from realtykit.store.db import connect, init_db
 from realtykit.store.facts import resolve_geo
@@ -10,6 +10,20 @@ from realtykit.store.seed import seed_if_empty
 def ensure_store() -> None:
     init_db()
     seed_if_empty()
+
+
+def ensure_local_request(request: Request) -> None:
+    client_host = ((request.client.host if request.client else "") or "").lower()
+    raw_host = request.headers.get("host", "").lower()
+    host_header = (
+        raw_host[1:].split("]", 1)[0] if raw_host.startswith("[") else raw_host.split(":", 1)[0]
+    )
+    loopback = {"127.0.0.1", "::1", "localhost"}
+    if client_host not in loopback or host_header not in loopback:
+        raise HTTPException(
+            status_code=403,
+            detail={"code": "loopback_only", "message": "Provider-backed requests are local-only."},
+        )
 
 
 def geo_param(

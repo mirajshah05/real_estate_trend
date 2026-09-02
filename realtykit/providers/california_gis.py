@@ -9,9 +9,10 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from datetime import datetime, timezone
+from collections.abc import Iterable
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 from urllib.parse import urlencode
 
 from realtykit.ingest.http import CachedFetch, CachedHttp
@@ -55,7 +56,7 @@ def _read_json(path: Path) -> dict[str, Any]:
 def _observation_date(metadata: dict[str, Any]) -> str | None:
     millis = (metadata.get("editingInfo") or {}).get("lastEditDate")
     if millis:
-        return datetime.fromtimestamp(float(millis) / 1000, timezone.utc).date().isoformat()
+        return datetime.fromtimestamp(float(millis) / 1000, UTC).date().isoformat()
     return None
 
 
@@ -63,7 +64,7 @@ def _freshness(observation_as_of: str | None) -> str:
     if not observation_as_of:
         return "unavailable"
     observed = datetime.fromisoformat(observation_as_of).date()
-    age = (datetime.now(timezone.utc).date() - observed).days
+    age = (datetime.now(UTC).date() - observed).days
     return "fresh" if age <= 7 else "stale"
 
 
@@ -102,8 +103,15 @@ def _manifest_entry(fetch: CachedFetch, *, label: str, url: str) -> dict[str, An
 
 
 def _outcome(
-    *, source_id: str, dataset: str, url: str, fetched_at: str, status: str,
-    note: str, observation_as_of: str | None = None, cached: CachedFetch | None = None,
+    *,
+    source_id: str,
+    dataset: str,
+    url: str,
+    fetched_at: str,
+    status: str,
+    note: str,
+    observation_as_of: str | None = None,
+    cached: CachedFetch | None = None,
     rows: int = 0,
 ) -> FetchOutcome:
     return FetchOutcome(
@@ -153,7 +161,11 @@ def ingest(
         metadata_fetch = http.get_cached(
             metadata_url, "santa-clara/city-limits.layer.json", force=force
         )
-        manifest_files.append(_manifest_entry(metadata_fetch, label="Santa Clara city-limit metadata", url=metadata_url))
+        manifest_files.append(
+            _manifest_entry(
+                metadata_fetch, label="Santa Clara city-limit metadata", url=metadata_url
+            )
+        )
         city_metadata = _read_json(metadata_fetch.path)
         city_observation = _observation_date(city_metadata)
 
@@ -171,7 +183,9 @@ def ingest(
         geometry_fetch = http.get_cached(
             geometry_url, "santa-clara/target-city-boundaries.geojson", force=force
         )
-        manifest_files.append(_manifest_entry(geometry_fetch, label="Five target-city boundaries", url=geometry_url))
+        manifest_files.append(
+            _manifest_entry(geometry_fetch, label="Five target-city boundaries", url=geometry_url)
+        )
         feature_collection = _read_json(geometry_fetch.path)
         city_parts: dict[str, list] = {city: [] for city in TARGET_CITIES}
         for feature in feature_collection.get("features") or []:
@@ -240,10 +254,12 @@ def ingest(
     counts: dict[str, int] = {}
     try:
         metadata_url = f"{SCC_PARCEL_LAYER}?f=pjson"
-        parcel_cached = http.get_cached(
-            metadata_url, "santa-clara/parcels.layer.json", force=force
+        parcel_cached = http.get_cached(metadata_url, "santa-clara/parcels.layer.json", force=force)
+        manifest_files.append(
+            _manifest_entry(
+                parcel_cached, label="Santa Clara public-parcel metadata", url=metadata_url
+            )
         )
-        manifest_files.append(_manifest_entry(parcel_cached, label="Santa Clara public-parcel metadata", url=metadata_url))
         parcel_metadata = _read_json(parcel_cached.path)
         parcel_observation = _observation_date(parcel_metadata)
         for city in TARGET_CITIES:
@@ -260,7 +276,9 @@ def ingest(
                 f"santa-clara/parcel-counts/{city.lower().replace(' ', '-')}.json",
                 force=force,
             )
-            manifest_files.append(_manifest_entry(count_fetch, label=f"{city.title()} parcel count", url=count_url))
+            manifest_files.append(
+                _manifest_entry(count_fetch, label=f"{city.title()} parcel count", url=count_url)
+            )
             count_payload = _read_json(count_fetch.path)
             counts[city.title()] = int(count_payload.get("count") or 0)
 
@@ -323,7 +341,11 @@ def ingest(
         smc_cached = http.get_cached(
             metadata_url, "san-mateo/active-parcels.service.json", force=force
         )
-        manifest_files.append(_manifest_entry(smc_cached, label="San Mateo active-parcel service metadata", url=metadata_url))
+        manifest_files.append(
+            _manifest_entry(
+                smc_cached, label="San Mateo active-parcel service metadata", url=metadata_url
+            )
+        )
         smc_metadata = _read_json(smc_cached.path)
         smc_observation = _observation_date(smc_metadata)
         outcomes.append(

@@ -7,13 +7,30 @@ from typing import Any
 
 from realtykit.freshness import build_freshness
 from realtykit.log import log, utc_iso
-from realtykit.providers import california_gis, compass, census_gazetteer, fred, redfin_research, rentcast
-from realtykit.providers import yahoo_chart, zillow_research
+from realtykit.providers import (
+    california_gis,
+    census_gazetteer,
+    compass,
+    fred,
+    redfin_research,
+    rentcast,
+    yahoo_chart,
+    zillow_research,
+)
 from realtykit.settings import Settings, get_settings
 from realtykit.store.db import init_db
 from realtykit.store.seed import write_run
 
-PROVIDER_ORDER = ("zillow", "redfin", "yahoo", "census", "government", "fred", "compass", "rentcast")
+PROVIDER_ORDER = (
+    "zillow",
+    "redfin",
+    "yahoo",
+    "census",
+    "government",
+    "fred",
+    "compass",
+    "rentcast",
+)
 
 
 def refresh(
@@ -83,7 +100,13 @@ def refresh(
         conn.close()
 
     finished = utc_iso()
-    summary = {"run_id": run_id, "started_at": started, "finished_at": finished, "ok": ok, "outcomes": outcomes}
+    summary = {
+        "run_id": run_id,
+        "started_at": started,
+        "finished_at": finished,
+        "ok": ok,
+        "outcomes": outcomes,
+    }
     write_run(run_id, started, finished, ok, summary)
     log("ingest_refresh", run_id=run_id, ok=ok, n=len(outcomes))
     freshness = build_freshness()

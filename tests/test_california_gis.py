@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -16,7 +16,7 @@ def test_geometry_center_uses_boundary_extent():
 
 
 def test_arcgis_last_edit_date_becomes_utc_date():
-    timestamp = datetime(2026, 8, 29, 12, tzinfo=timezone.utc).timestamp() * 1000
+    timestamp = datetime(2026, 8, 29, 12, tzinfo=UTC).timestamp() * 1000
     assert _observation_date({"editingInfo": {"lastEditDate": timestamp}}) == "2026-08-29"
 
 

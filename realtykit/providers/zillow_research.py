@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import sqlite3
-from datetime import date
+from datetime import UTC, date, datetime
 
 from realtykit.freshness import classify
 from realtykit.ingest.http import CachedHttp
@@ -81,11 +81,13 @@ def geo_id_for(region_id: str, region_type: str, name: str) -> str:
 
 
 def _min_period(keep_years: int) -> str:
-    today = date.today()
+    today = datetime.now(UTC).date()
     return date(today.year - keep_years, today.month, 1).isoformat()
 
 
-def ingest(conn: sqlite3.Connection, settings: Settings | None = None, force: bool = False) -> list[FetchOutcome]:
+def ingest(
+    conn: sqlite3.Connection, settings: Settings | None = None, force: bool = False
+) -> list[FetchOutcome]:
     settings = settings or get_settings()
     http = CachedHttp(settings)
     outcomes: list[FetchOutcome] = []
@@ -95,7 +97,9 @@ def ingest(conn: sqlite3.Connection, settings: Settings | None = None, force: bo
     return outcomes
 
 
-def _ingest_one(conn: sqlite3.Connection, http: CachedHttp, spec: dict, force: bool) -> FetchOutcome:
+def _ingest_one(
+    conn: sqlite3.Connection, http: CachedHttp, spec: dict, force: bool
+) -> FetchOutcome:
     fetched_at = utc_iso()
     try:
         cached = http.get_cached(
@@ -142,7 +146,9 @@ def _ingest_one(conn: sqlite3.Connection, http: CachedHttp, spec: dict, force: b
         geos[gid] = {
             "geo_id": gid,
             "level": "nation" if gid == "nation:US" else spec.get("level", "metro"),
-            "name": str(row["name"]).strip().zfill(5) if spec.get("level") == "zip" else row["name"],
+            "name": str(row["name"]).strip().zfill(5)
+            if spec.get("level") == "zip"
+            else row["name"],
             "state": row["state"] or None,
         }
         facts.append(

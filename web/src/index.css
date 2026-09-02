@@ -283,6 +283,7 @@ button.chip {
 }
 
 .caption-card span {
+  display: block;
   color: var(--muted);
   font-size: 11px;
 }
@@ -315,13 +316,17 @@ button.chip {
 
 .kpi-strip {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   border-bottom: 1px solid var(--line);
 }
 
 .kpi {
   padding: 10px 10px 12px;
   border-right: 1px solid var(--line);
+}
+
+.kpi:nth-child(-n + 2) {
+  border-bottom: 1px solid var(--line);
 }
 
 .kpi:last-child {
@@ -333,6 +338,48 @@ button.chip {
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.term-help {
+  position: relative;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  padding: 0;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 13px;
+  text-transform: none;
+}
+
+.term-help::after {
+  content: attr(data-tip);
+  display: none;
+  position: absolute;
+  z-index: 1500;
+  top: 20px;
+  left: -8px;
+  width: 220px;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-align: left;
+  text-transform: none;
+  white-space: normal;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.term-help:hover::after,
+.term-help:focus-visible::after {
+  display: block;
 }
 
 .kpi .value {
@@ -361,6 +408,16 @@ button.chip {
   border-radius: 0;
   padding: 8px 10px;
   color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.dock-tabs button small {
+  color: var(--muted);
+  font-size: 8px;
+  letter-spacing: 0.08em;
 }
 
 .dock-tabs button.active {
@@ -379,6 +436,25 @@ button.chip {
   margin: 0 0 6px;
   font-size: 13px;
   font-weight: 600;
+}
+
+.scope-bar {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: start;
+  margin: -2px 0 12px;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.scope-bar strong {
+  color: #9aa8ff;
+  font-size: 9px;
+  letter-spacing: 0.08em;
 }
 
 .panel-caption {
@@ -562,6 +638,84 @@ button.chip {
   gap: 6px 10px;
   margin: 6px 0;
   font-size: 11px;
+}
+
+.panel-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.panel-title-row .panel-caption {
+  margin-top: 0;
+}
+
+.quota,
+.inline-alert,
+.fine-print {
+  margin: 0 0 10px;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.quota {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quota.warn,
+.inline-alert {
+  border-color: var(--aging);
+  color: var(--aging);
+}
+
+.property-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+
+.property-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.property-row > div:first-child,
+.property-numbers {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.property-row strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.property-row span,
+.property-facts {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.property-numbers {
+  text-align: right;
+  font-family: var(--mono);
+}
+
+.property-facts {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 9px;
 }
 
 .footer {

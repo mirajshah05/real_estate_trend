@@ -35,11 +35,20 @@ def upsert_government_areas(
         """,
         [
             (
-                row["area_id"], row["name"], row["state"], row["county"],
-                row.get("parent_geo_id"), row["provider"], row["source_id"],
-                row["lat"], row["lon"], row.get("parcel_count"),
+                row["area_id"],
+                row["name"],
+                row["state"],
+                row["county"],
+                row.get("parent_geo_id"),
+                row["provider"],
+                row["source_id"],
+                row["lat"],
+                row["lon"],
+                row.get("parcel_count"),
                 json.dumps(row["geometry"], separators=(",", ":")),
-                row.get("observation_as_of"), row["fetched_at"], row.get("note"),
+                row.get("observation_as_of"),
+                row["fetched_at"],
+                row.get("note"),
             )
             for row in rows
         ],
@@ -53,9 +62,12 @@ def upsert_government_areas(
 def list_government_areas(conn: sqlite3.Connection | None = None) -> list[dict[str, Any]]:
     owned = conn is None
     conn = conn or connect()
-    rows = [dict(row) for row in conn.execute(
-        "SELECT * FROM government_areas ORDER BY state, county, name"
-    ).fetchall()]
+    rows = [
+        dict(row)
+        for row in conn.execute(
+            "SELECT * FROM government_areas ORDER BY state, county, name"
+        ).fetchall()
+    ]
     if owned:
         conn.close()
     for row in rows:
