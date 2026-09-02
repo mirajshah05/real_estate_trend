@@ -29,6 +29,13 @@ use their public research datasets rather than consumer-page scraping.
 Government parcel layers provide geography and parcel context. They are not
 automatically equivalent to verified deed sale prices.
 
+For the implementation-ready plan to add individual listing prices and closed
+sale prices in the selected Santa Clara and San Mateo County areas, see
+[`docs/property-level-california.md`](docs/property-level-california.md). The
+short path uses one RentCast developer key for both active listings and property
+sale history; the authoritative production path uses a licensed MLSListings
+feed plus county assessor transfer files for validation.
+
 ## Technology
 
 | Layer | Technology |
