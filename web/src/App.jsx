@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getApiOrFixture, paths, postJson } from "./api.js";
 import Dock from "./components/Dock.jsx";
@@ -11,6 +11,7 @@ import {
   normalizeDips,
   normalizeGovernmentAreas,
   normalizeListings,
+  normalizeRentalTrends,
   normalizeSales,
   normalizeOutliers,
   normalizeTrends,
@@ -51,6 +52,15 @@ function Dashboard() {
   const [tab, setTab] = useState(location.pathname === "/sources" ? "sources" : "trends");
   const [refreshing, setRefreshing] = useState(false);
   const [bounds, setBounds] = useState(null);
+  const [researchFocus, setResearchFocus] = useState(false);
+  const [focusedListing, setFocusedListing] = useState(null);
+  const [rentalCity, setRentalCity] = useState("San Jose");
+  const [rentalMonths, setRentalMonths] = useState(36);
+  const [rentalTrends, setRentalTrends] = useState(null);
+  const [rentalTrendsState, setRentalTrendsState] = useState({ loading: false, error: null, data: null });
+  const [rentalImportState, setRentalImportState] = useState({ loading: false, error: null, data: null });
+  const [rentalEstimateState, setRentalEstimateState] = useState({ loading: false, error: null, data: null });
+  const rentalRequestRef = useRef(0);
 
   const [kpis, setKpis] = useState(null);
   const [kpisState, setKpisState] = useState({ loading: true, error: null, data: null });
@@ -67,7 +77,7 @@ function Dashboard() {
 
   const outlierIds = useMemo(() => {
     const ids = new Set();
-    for (const row of outliers) {
+    for (const row of outliers || []) {
       if (row.subject_id) ids.add(row.subject_id);
     }
     for (const c of cities) {
@@ -251,6 +261,49 @@ function Dashboard() {
     });
   }, [bounds]);
 
+  const loadRentalTrends = useCallback(async (city, months) => {
+    const requestId = ++rentalRequestRef.current;
+    setRentalTrendsState({ loading: true, error: null, data: null });
+    const res = await getApiOrFixture(paths.rentalTrends(city, months));
+    if (requestId !== rentalRequestRef.current) return;
+    if (res.data) {
+      const data = normalizeRentalTrends(res.data);
+      setRentalTrends(data);
+      setRentalTrendsState({ loading: false, error: null, data });
+    } else {
+      setRentalTrends(null);
+      setRentalTrendsState({ loading: false, error: res.error, data: null });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (tab !== "rentals") return;
+    loadRentalTrends(rentalCity, rentalMonths);
+  }, [tab, rentalCity, rentalMonths, loadRentalTrends]);
+
+  const importRentals = useCallback(async (payload) => {
+    setRentalImportState({ loading: true, error: null, data: null });
+    try {
+      const data = await postJson(paths.rentalImport, payload);
+      setRentalImportState({ loading: false, error: null, data: data || {} });
+      await loadRentalTrends(rentalCity, rentalMonths);
+      return data;
+    } catch (error) {
+      setRentalImportState({ loading: false, error, data: null });
+      throw error;
+    }
+  }, [loadRentalTrends, rentalCity, rentalMonths]);
+
+  const estimateRent = useCallback(async (payload) => {
+    setRentalEstimateState({ loading: true, error: null, data: null });
+    try {
+      const data = await postJson(paths.rentalEstimate, payload);
+      setRentalEstimateState({ loading: false, error: null, data: data || {} });
+    } catch (error) {
+      setRentalEstimateState({ loading: false, error, data: null });
+    }
+  }, []);
+
   const onRefresh = async () => {
     setRefreshing(true);
     try {
@@ -280,7 +333,13 @@ function Dashboard() {
 
   const onTab = (next) => {
     setTab(next);
+    if (next === "rentals") setResearchFocus(true);
     if (next === "sources") navigate("/sources", { replace: true });
+  };
+
+  const onFocusListing = (listing) => {
+    setFocusedListing(listing);
+    setTab("homes");
   };
 
   const mapNote =
@@ -295,6 +354,7 @@ function Dashboard() {
     return market ? market.name : selected.name;
   }, [cities, selected]);
   const metroNewListings = kpiValue(pickKpi(kpis, ["new_listings"]));
+  const propertyFocus = !researchFocus && tab === "homes" && Boolean(bounds && bounds.zoom >= 12);
 
   return (
     <div className="shell">
@@ -305,8 +365,8 @@ function Dashboard() {
         onRefresh={onRefresh}
         onOpenSources={() => onTab("sources")}
       />
-      <div className="main">
-        <MapPanel
+      <div className={`main${researchFocus ? " research-focus" : ""}${propertyFocus ? " property-focus" : ""}`}>
+        {!researchFocus && <MapPanel
           cities={cities}
           zipFeatures={zipFeatures}
           governmentAreas={governmentAreas}
@@ -321,7 +381,9 @@ function Dashboard() {
           onBounds={setBounds}
           staleLayer={staleLayer}
           staleNote={mapNote}
-        />
+          focusedListing={focusedListing}
+          onFocusListing={onFocusListing}
+        />}
         <Dock
           apiOnline={apiOnline}
           tab={tab}
@@ -349,6 +411,22 @@ function Dashboard() {
           salesState={salesState}
           onLoadSales={loadSales}
           canLoadSales={Boolean(bounds && bounds.zoom >= 10)}
+          propertyFocus={propertyFocus}
+          focusedListing={focusedListing}
+          onFocusListing={setFocusedListing}
+          researchFocus={researchFocus}
+          onResearchFocus={setResearchFocus}
+          rentalCity={rentalCity}
+          onRentalCity={setRentalCity}
+          rentalMonths={rentalMonths}
+          onRentalMonths={setRentalMonths}
+          rentalTrends={rentalTrends}
+          rentalTrendsState={rentalTrendsState}
+          onRetryRentalTrends={() => loadRentalTrends(rentalCity, rentalMonths)}
+          onImportRentals={importRentals}
+          rentalImportState={rentalImportState}
+          onEstimateRent={estimateRent}
+          rentalEstimateState={rentalEstimateState}
         />
       </div>
       <footer className="footer">

@@ -29,7 +29,13 @@ def fixtures_dir() -> Path:
 
 
 @pytest.fixture
-def now_utc() -> datetime:
+def now_utc(monkeypatch: pytest.MonkeyPatch) -> datetime:
+    # Keep freshness contract tests pinned to the research compile clock.  The
+    # production classifier reads its clock internally, so passing ``now`` via
+    # a compatibility helper alone cannot make these fixtures deterministic.
+    from realtykit import freshness
+
+    monkeypatch.setattr(freshness, "utc_now", lambda: NOW_UTC)
     return NOW_UTC
 
 

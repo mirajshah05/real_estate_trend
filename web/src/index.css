@@ -33,7 +33,8 @@ body,
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
   color: inherit;
 }
@@ -158,6 +159,19 @@ button.chip {
   flex: 1;
   display: flex;
   min-height: 0;
+}
+
+.main.research-focus .dock {
+  flex-basis: 100%;
+  border-left: 0;
+}
+
+.main.property-focus .map-pane {
+  flex-basis: 38%;
+}
+
+.main.property-focus .dock {
+  flex-basis: 62%;
 }
 
 .map-pane {
@@ -307,11 +321,42 @@ button.chip {
 
 .dock {
   flex: 0 0 30%;
+  position: relative;
+  z-index: 1200;
   background: var(--panel);
   border-left: 1px solid var(--line);
   display: flex;
   flex-direction: column;
   min-width: 0;
+}
+
+.workspace-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--accent) 5%, var(--panel));
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.workspace-controls .seg {
+  flex: 0 0 auto;
+}
+
+.workspace-controls button {
+  padding: 4px 8px;
+  font-size: 10px;
+}
+
+.research-focus .kpi-strip {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.research-focus .kpi:nth-child(-n + 2) {
+  border-bottom: 0;
 }
 
 .kpi-strip {
@@ -480,6 +525,128 @@ button.chip {
 .chart-wrap {
   height: 220px;
   width: 100%;
+}
+
+.overlay-explanation {
+  margin-top: 12px;
+}
+
+.overlay-explanation h3 {
+  margin: 0 0 5px;
+  font-size: 12px;
+}
+
+.overlay-explanation > p {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.overlay-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--bg));
+  padding: 9px 10px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.overlay-guide span {
+  color: var(--muted);
+}
+
+.overlay-series-grid {
+  display: grid;
+  gap: 7px;
+}
+
+.overlay-series-card {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 8px 9px;
+}
+
+.overlay-series-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.overlay-series-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.overlay-series-card p {
+  margin: 3px 0 7px 13px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.overlay-series-stat {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 3px;
+  font-size: 10px;
+}
+
+.overlay-series-stat span,
+.overlay-series-meta {
+  color: var(--muted);
+}
+
+.overlay-series-stat strong {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-align: right;
+}
+
+.overlay-series-meta {
+  display: block;
+  margin-top: 7px;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.overlay-tooltip {
+  min-width: 150px;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  background: #16162a;
+  color: var(--text);
+  font-size: 11px;
+}
+
+.overlay-tooltip > strong {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.overlay-tooltip-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  margin-top: 4px;
+}
+
+.overlay-tooltip-row span:last-of-type {
+  font-family: var(--mono);
+}
+
+.overlay-tooltip-row small {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 9px;
 }
 
 .offline {
@@ -707,6 +874,385 @@ button.chip {
   font-size: 10px;
 }
 
+.property-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+  border-top: 0;
+}
+
+.property-gallery .property-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 0 0 10px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.property-gallery .property-row:hover,
+.property-gallery .property-row:focus-visible,
+.property-gallery .property-row.selected {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.property-gallery .property-row > div:not(.property-photo) {
+  padding-left: 10px;
+}
+
+.property-gallery .property-numbers {
+  padding-right: 10px;
+}
+
+.property-photo {
+  grid-column: 1 / -1;
+  height: 138px;
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(140deg, rgba(67, 97, 238, 0.13), rgba(73, 198, 179, 0.04)),
+    repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,255,255,0.02) 10px, rgba(255,255,255,0.02) 20px);
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.property-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.eyebrow {
+  margin: 0 0 3px;
+  color: #9aa8ff;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rentals-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.rentals-heading h2 {
+  font-size: 20px;
+  margin-bottom: 3px;
+}
+
+.rental-scope-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.subtabs {
+  display: flex;
+  gap: 4px;
+  margin: 4px 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.subtabs button {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 7px 10px;
+  color: var(--muted);
+}
+
+.subtabs button.active {
+  border-bottom-color: var(--accent);
+  background: transparent;
+  color: var(--text);
+}
+
+.rentals-panel h3,
+.tool-section h3 {
+  margin: 0 0 4px;
+  font-size: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--bg);
+  padding: 6px 8px;
+  outline: none;
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.compact-field {
+  min-width: 145px;
+}
+
+.trend-filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.rent-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.rent-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.rent-kpi span,
+.rent-kpi small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.rent-kpi strong {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.rental-chart {
+  width: 100%;
+  height: 320px;
+  margin-top: 6px;
+}
+
+.market-index-card {
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.market-index-value {
+  color: var(--halo);
+  font-size: 1.45rem;
+  white-space: nowrap;
+}
+
+.rental-chart.compact-chart {
+  height: 220px;
+}
+
+.seasonality-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.seasonality-grid article,
+.rental-reliability {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  padding: 10px;
+}
+
+.seasonality-grid article {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.seasonality-grid span,
+.seasonality-grid small,
+.rental-reliability p {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.seasonality-grid strong {
+  font-size: 14px;
+}
+
+.rental-table-wrap,
+.rental-reliability {
+  margin-top: 12px;
+}
+
+.rental-table-wrap h4,
+.rental-reliability h4 {
+  margin: 0 0 6px;
+  font-size: 12px;
+}
+
+.rental-month-table td:not(:first-child),
+.rental-month-table th:not(:first-child) {
+  text-align: right;
+}
+
+.rental-reliability p {
+  margin: 4px 0;
+}
+
+.rental-reliability strong {
+  color: var(--text);
+}
+
+.rental-state-card {
+  padding: 0 0 12px;
+}
+
+.rental-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 760px;
+  margin-top: 14px;
+}
+
+.field-wide {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.primary-button {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  padding: 7px 12px;
+}
+
+.estimate-result,
+.import-result {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 760px;
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--live);
+  background: color-mix(in srgb, var(--live) 8%, var(--bg));
+}
+
+.estimate-result > span:first-child,
+.estimate-result small,
+.import-result span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.estimate-result > strong {
+  font-family: var(--mono);
+  font-size: 26px;
+  font-weight: 500;
+}
+
+.estimate-result details {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.estimate-result ul {
+  margin-bottom: 0;
+}
+
+.comparable-list {
+  padding-left: 0;
+  list-style: none;
+}
+
+.comparable-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.drop-zone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  max-width: 760px;
+  min-height: 180px;
+  margin: 14px 0 10px;
+  border: 1px dashed #596bc0;
+  background: color-mix(in srgb, var(--accent) 5%, var(--bg));
+  color: var(--muted);
+}
+
+.drop-zone input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.drop-zone strong {
+  color: var(--text);
+}
+
+.upload-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: #9aa8ff;
+  font-size: 19px;
+}
+
+.schema-note {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 760px;
+  margin: 10px 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.schema-note code {
+  overflow-wrap: anywhere;
+  color: var(--text);
+}
+
 .property-numbers {
   text-align: right;
   font-family: var(--mono);
@@ -756,5 +1302,56 @@ button.chip {
   }
   .kpi .value {
     font-size: 15px;
+  }
+  .main.property-focus .map-pane,
+  .main.property-focus .dock {
+    flex: 1 1 50%;
+  }
+  .research-focus .kpi-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .research-focus .kpi:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
+  }
+  .main.research-focus .dock {
+    flex-basis: 100%;
+    max-height: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  .banner-top,
+  .rentals-heading,
+  .workspace-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .banner-actions,
+  .footer span:last-child {
+    display: none;
+  }
+  .workspace-controls .seg,
+  .compact-field,
+  .trend-filters,
+  .rental-scope-controls {
+    width: 100%;
+  }
+  .workspace-controls .seg button,
+  .subtabs button {
+    flex: 1;
+  }
+  .rent-kpis,
+  .rental-form,
+  .seasonality-grid {
+    grid-template-columns: 1fr;
+  }
+  .field-wide {
+    grid-column: auto;
+  }
+  .rental-chart {
+    height: 250px;
+  }
+  .rental-table-wrap {
+    overflow-x: auto;
   }
 }

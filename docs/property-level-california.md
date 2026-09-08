@@ -9,8 +9,9 @@ San Jose, Santa Clara, and adjacent San Mateo County communities.
   RentCast, with six-hour/24-hour persistent caches respectively.
 - Sale records are normalized into `sale_events`; owner, mailing, assessment,
   and tax fields are discarded before any response or cache write.
-- RentCast successful calls are persisted by calendar month, warn at 45/50,
-  and are blocked at 50. The account-wide provider dashboard remains the
+- Every RentCast attempt is reserved atomically in the offline SQLite ledger,
+  warns at 32/40, and is blocked at 40. Environment settings may lower the
+  limit but cannot raise it. The account-wide provider dashboard remains the
   authority for calls made outside this app.
 - The supplied RentCast key returned HTTP 403 on the official endpoint because
   it is not associated with an active API subscription. The supplied ATTOM key
@@ -27,8 +28,9 @@ price are different facts with different publishers:
 
 1. **Immediate development path — RentCast:** one self-serve API key supplies
    current and inactive sale listings plus property sale histories. The free
-   Developer plan includes 50 successful requests per month, which is enough
-   for integration testing but not a scheduled production refresh.
+   Developer plan includes 50 requests per month, but RealtyKit deliberately
+   stops at 40 attempted requests for a safety buffer. This is enough for
+   integration testing but not a scheduled production refresh.
 2. **Production listing path — MLSListings:** obtain an authorized IDX, VOW, or
    other licensed data feed through a participating broker. MLSListings is the
    local MLS for Santa Clara and San Mateo counties, refreshes every five
@@ -71,7 +73,8 @@ replace Santa Clara records.
 - Sold/property endpoint: `GET https://api.rentcast.io/v1/properties`
 - Authentication: `X-Api-Key: ${RENTCAST_API_KEY}`
 - Pagination: `limit` up to 500 plus `offset`
-- Free allowance: 50 successful requests per month on the Developer plan
+- Provider allowance: 50 requests per month on the Developer plan; RealtyKit's
+  local hard cap is 40 attempts per calendar month
 - Listing freshness: RentCast says each listing is updated at least daily and
   newly published listings are generally available within 12–24 hours.
 - Coverage claim: RentCast says it targets at least 96% residential listing

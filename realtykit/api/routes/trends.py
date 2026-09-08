@@ -28,6 +28,12 @@ FACT_SOURCES = {
     "inventory_wow": "zillow:inv_week_metro",
     "inventory_yoy": "zillow:inv_week_metro",
 }
+FACT_CADENCE_OVERRIDES = {
+    # The combined Overlay intentionally mixes monthly housing values with
+    # weekly comparison series. Do not discard ZHVI when the page requests its
+    # usual weekly trend payload.
+    "zhvi": "monthly",
+}
 MACRO_SOURCES = {
     "GSPC": "yahoo:GSPC",
     "MORTGAGE30US": "fred:MORTGAGE30US",
@@ -98,19 +104,20 @@ def trends(
             status_code=422,
             detail={"code": "unknown_metric", "message": f"Unknown metric: {unknown[0]}"},
         )
-    names = names[:6]
+    names = names[:8]
 
     series: dict[str, list[TrendPoint]] = {}
     for name in names:
         if name in MACRO_SERIES:
             points = _macro_points(MACRO_SERIES[name], cadence, from_date, to_date)
         else:
+            fact_cadence = FACT_CADENCE_OVERRIDES.get(name, cadence)
             points = series_for(
                 geo_id,
                 name,
                 limit=260,
                 provider="zillow",
-                cadence=cadence,
+                cadence=fact_cadence,
                 from_period=from_date,
                 to_period=to_date,
             )

@@ -158,6 +158,31 @@ export function normalizeUnitInterval(points) {
   return points.map((p) => ({ t: p.t, v: (p.v - lo) / span }));
 }
 
+export function summarizeSeries(points) {
+  const ordered = (points || [])
+    .filter((p) => p && p.t && Number.isFinite(p.v))
+    .slice()
+    .sort((a, b) => (a.t < b.t ? -1 : a.t > b.t ? 1 : 0));
+  if (!ordered.length) return null;
+
+  const values = ordered.map((p) => p.v);
+  const low = Math.min(...values);
+  const high = Math.max(...values);
+  const span = high - low || 1;
+  const first = ordered[0];
+  const latest = ordered[ordered.length - 1];
+  return {
+    count: ordered.length,
+    start: first,
+    latest,
+    low,
+    high,
+    change: latest.v - first.v,
+    changePct: first.v ? ((latest.v - first.v) / Math.abs(first.v)) * 100 : null,
+    rangePosition: ((latest.v - low) / span) * 100,
+  };
+}
+
 export function normalizeOutliers(payload) {
   const rows = (payload && (payload.rows || payload.outliers)) || [];
   const block = payload && payload.freshness;
@@ -259,8 +284,90 @@ export function normalizeListings(payload) {
       outlier_reasons: Array.isArray(l.outlier_reasons)
         ? l.outlier_reasons.map(asText)
         : [],
+      photos: (Array.isArray(l.photos) ? l.photos : Array.isArray(l.images) ? l.images : [])
+        .map((photo) => asText(typeof photo === "string" ? photo : photo && (photo.url || photo.href)))
+        .filter(Boolean),
     }))
     .filter((l) => l.lat != null && l.lon != null);
+}
+
+/** Flatten rental trend payloads while accepting both row and grouped-series APIs. */
+export function normalizeRentalTrends(payload) {
+  if (!payload) return { rows: [], market_indices: [], as_of: null, summary: null };
+  const rows = [];
+  const add = (point, group = {}) => {
+    const month = asDateText(
+      point.month || point.period || point.period_end || point.observed_on || point.date || point.t
+    );
+    const rent = asNumber(
+      point.median_rent ?? point.monthly_rent ?? point.rent ?? point.value ?? point.v
+    );
+    if (!month || rent == null) return;
+    rows.push({
+      month: month.slice(0, 7),
+      city: asText(point.city || group.city || payload.city),
+      bedrooms: asNumber(point.bedrooms ?? point.beds ?? group.bedrooms ?? group.beds),
+      property_type: asText(
+        point.property_type || point.propertyType || group.property_type || group.propertyType || "All homes"
+      ),
+      listing_status: asText(point.listing_status || point.status || group.listing_status),
+      median_rent: rent,
+      average_rent: asNumber(point.average_rent ?? point.mean_rent),
+      count: asNumber(point.count ?? point.listing_count ?? point.sample_size),
+    });
+  };
+
+  const direct = payload.rows || payload.trends || payload.data || payload.segments;
+  if (Array.isArray(direct)) direct.forEach((row) => add(row));
+
+  const series = payload.series;
+  if (Array.isArray(series)) {
+    series.forEach((group) => {
+      const points = group.points || group.values || group.data;
+      if (Array.isArray(points)) points.forEach((point) => add(point, group));
+      else add(group);
+    });
+  } else if (series && typeof series === "object") {
+    Object.entries(series).forEach(([key, value]) => {
+      if (!Array.isArray(value)) return;
+      const bedMatch = key.match(/(?:^|\D)([1-3])\s*(?:bed|br|bd)?/i);
+      const typeMatch = key.match(/apartment|townhouse|single[_ -]?family/i);
+      value.forEach((point) => add(point, {
+        bedrooms: bedMatch ? Number(bedMatch[1]) : null,
+        property_type: typeMatch ? typeMatch[0].replace(/[_-]/g, " ") : "All homes",
+      }));
+    });
+  }
+
+  const marketIndices = Array.isArray(payload.market_indices)
+    ? payload.market_indices.map((index) => ({
+        provider: asText(index.provider),
+        source_id: asText(index.source_id),
+        metric: asText(index.metric),
+        home_type: asText(index.home_type),
+        city: asText(index.city || payload.city),
+        as_of: asDateText(index.as_of),
+        points: Array.isArray(index.points)
+          ? index.points.map((point) => ({
+              month: asDateText(point.month || point.period_end || point.t)?.slice(0, 7),
+              value: asNumber(point.value ?? point.v),
+            })).filter((point) => point.month && point.value != null)
+          : [],
+      }))
+    : [];
+
+  return {
+    rows: rows.sort((a, b) => a.month.localeCompare(b.month)),
+    market_indices: marketIndices,
+    rentcast_usage: payload.rentcast_usage || null,
+    observation_count: asNumber(payload.observation_count) || 0,
+    first_observed_on: asDateText(payload.first_observed_on),
+    last_observed_on: asDateText(payload.last_observed_on),
+    as_of: asDateText(payload.as_of || payload.last_observed_on || payload.date_to || payload.observation_as_of),
+    date_from: asDateText(payload.date_from),
+    date_to: asDateText(payload.date_to),
+    summary: payload.summary || payload.coverage || null,
+  };
 }
 
 export function normalizeSales(payload) {

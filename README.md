@@ -24,7 +24,8 @@ use their public research datasets rather than consumer-page scraping.
 - Stock-market dips and housing/stock/mortgage correlation views.
 - Market and listing outlier flags.
 - Address-level active-home and recorded-sale viewport panels when RentCast is active.
-- Persistent provider-request accounting, a warning at 45/50, and a hard local cap at 50 successful RentCast requests per calendar month.
+- Persistent provider-request accounting, a warning at 32/40, and a non-overridable hard local cap of 40 attempted RentCast requests per calendar month.
+- Local CSV/JSON imports for up to three years of validated Bay Area rental observations, with 12-month bedroom, property-type, and new/existing trend cuts.
 - Source-level observation dates, file dates, and stale-data warnings.
 - Santa Clara County boundaries and parcel counts for Palo Alto, Santa Clara,
   Mountain View, Sunnyvale, and San Jose.
@@ -39,6 +40,10 @@ sale prices in the selected Santa Clara and San Mateo County areas, see
 short path uses one RentCast developer key for both active listings and property
 sale history; the authoritative production path uses a licensed MLSListings
 feed plus a county transfer list only where its price fields are documented.
+
+The rental upload schema, retention rules, query contract, and public-index
+integration boundary are documented in
+[`docs/historical-rentals.md`](docs/historical-rentals.md).
 
 ## Technology
 
@@ -157,8 +162,8 @@ REALTYKIT_RESOURCES_DIR=
 REALTYKIT_HOST=127.0.0.1
 REALTYKIT_PORT=8770
 REALTYKIT_CORS_ORIGINS=http://127.0.0.1:5173,http://localhost:5173
-RENTCAST_MONTHLY_LIMIT=50
-RENTCAST_WARNING_AT=45
+RENTCAST_MONTHLY_LIMIT=40
+RENTCAST_WARNING_AT=32
 ```
 
 `REALTYKIT_DATA_DIR` changes where the SQLite database, raw market cache, and
@@ -460,11 +465,12 @@ requests are made only after the map is zoomed into a bounded area and the
 **Homes** tab is open.
 
 If the Homes panel says the subscription is inactive, the key is saved but a
-RentCast API plan still needs to be activated in the provider dashboard. Only
-successful responses count toward the app's monthly counter. The counter is
-stored in `data/realtykit.db`, survives restarts, warns at 45, and blocks new
-live calls at 50. It cannot observe calls made by other applications, so the
-provider dashboard remains the account-wide authority.
+RentCast API plan still needs to be activated in the provider dashboard. Every
+attempt is atomically counted before the request leaves the app, including
+failures. The counter is stored in `data/realtykit.db`, survives restarts,
+warns at 32, and blocks new live calls at 40. Configuration may lower this cap
+but cannot raise it. The app cannot observe calls made by other applications,
+so the provider dashboard remains the account-wide authority.
 
 ### ATTOM trial returns unauthorized
 

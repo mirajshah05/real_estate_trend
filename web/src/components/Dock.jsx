@@ -3,6 +3,7 @@ import CorrelationPanel from "./CorrelationPanel.jsx";
 import KpiStrip from "./KpiStrip.jsx";
 import OutlierTable from "./OutlierTable.jsx";
 import ResearchPanel from "./ResearchPanel.jsx";
+import RentalsPanel from "./RentalsPanel.jsx";
 import SourcesPanel from "./SourcesPanel.jsx";
 import StockDips from "./StockDips.jsx";
 import { ListingsPanel, SalesPanel } from "./PropertyTable.jsx";
@@ -17,6 +18,7 @@ const TABS = [
   { id: "outliers", label: "Outliers", scope: "AREA / US" },
   { id: "dips", label: "Dips", scope: "US" },
   { id: "research", label: "Research", scope: "AREA + US" },
+  { id: "rentals", label: "Rentals", scope: "BAY AREA" },
   { id: "sources", label: "Sources", scope: "GLOBAL" },
 ];
 
@@ -47,6 +49,22 @@ export default function Dock({
   salesState,
   onLoadSales,
   canLoadSales,
+  propertyFocus,
+  focusedListing,
+  onFocusListing,
+  researchFocus,
+  onResearchFocus,
+  rentalCity,
+  onRentalCity,
+  rentalMonths,
+  onRentalMonths,
+  rentalTrends,
+  rentalTrendsState,
+  onRetryRentalTrends,
+  onImportRentals,
+  rentalImportState,
+  onEstimateRent,
+  rentalEstimateState,
 }) {
   const asOf = selected && (kpis && kpis.as_of);
   const geoLabel = selected ? selected.name : "United States";
@@ -59,6 +77,13 @@ export default function Dock({
   return (
     <aside className="dock">
       <KpiStrip kpis={kpis} />
+      <div className="workspace-controls" aria-label="Workspace layout">
+        <span>{propertyFocus ? "Gallery view · close zoom" : researchFocus ? "Research focus" : "Map + analysis"}</span>
+        <div className="seg">
+          <button type="button" aria-pressed={!researchFocus} className={!researchFocus ? "active" : ""} onClick={() => onResearchFocus(false)}>Map + data</button>
+          <button type="button" aria-pressed={researchFocus} className={researchFocus ? "active" : ""} onClick={() => onResearchFocus(true)}>Focus research</button>
+        </div>
+      </div>
       <nav className="dock-tabs">
         {TABS.map((t) => (
           <button
@@ -97,7 +122,14 @@ export default function Dock({
         )}
 
         {apiOnline !== false && tab === "homes" && (
-          <ListingsPanel listings={listings} meta={listingsMeta} metroNewListings={metroNewListings} />
+          <ListingsPanel
+            listings={listings}
+            meta={listingsMeta}
+            metroNewListings={metroNewListings}
+            gallery={propertyFocus}
+            focusedListing={focusedListing}
+            onFocus={onFocusListing}
+          />
         )}
 
         {apiOnline !== false && tab === "sales" && (
@@ -106,8 +138,8 @@ export default function Dock({
 
         {apiOnline !== false && tab === "overlay" && (
           <>
-            <h2>Home value vs ^GSPC vs mortgage</h2>
-            <p className="panel-caption">{areaContext} housing compared with national S&amp;P 500 and mortgage rates. Normalized 0–1 per series.</p>
+            <h2>Home value vs S&amp;P 500 vs mortgage rate</h2>
+            <p className="panel-caption">{areaContext} housing compared with national stocks and mortgage rates. Each line is normalized independently.</p>
             <PanelGate state={trendsState} empty="Overlay needs series from /api/trends.">
               <OverlayChart series={(trends && trends.series) || {}} />
               {trends && !hasOverlay(trends.series) && (
@@ -161,6 +193,22 @@ export default function Dock({
           </>
         )}
 
+        {tab === "rentals" && (
+          <RentalsPanel
+            city={rentalCity}
+            onCity={onRentalCity}
+            months={rentalMonths}
+            onMonths={onRentalMonths}
+            trends={rentalTrends}
+            trendsState={rentalTrendsState}
+            onRetry={onRetryRentalTrends}
+            onImport={onImportRentals}
+            importState={rentalImportState}
+            onEstimate={onEstimateRent}
+            estimateState={rentalEstimateState}
+          />
+        )}
+
         {tab === "sources" && (
           <>
             <h2>Sources</h2>
@@ -182,6 +230,7 @@ function scopeDescription(tab, areaContext) {
   if (tab === "sources") return "Application-wide provider status and freshness.";
   if (tab === "outliers") return "Uses local homes when available; otherwise compares US metros.";
   if (tab === "research") return `${areaContext}, with national context.`;
+  if (tab === "rentals") return "Up to 36 months of rental research for four core Bay Area cities.";
   return `${areaContext}; refreshes when the selected market changes.`;
 }
 

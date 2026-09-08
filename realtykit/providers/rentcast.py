@@ -16,7 +16,14 @@ from realtykit.store.provider_usage import get_cached, put_cached, record_attemp
 from realtykit.store.sources import upsert_source
 
 SALE_URL = "https://api.rentcast.io/v1/listings/sale"
+RENTAL_URL = "https://api.rentcast.io/v1/listings/rental/long-term"
 PROPERTIES_URL = "https://api.rentcast.io/v1/properties"
+TARGET_RENTAL_CITIES = ("San Jose", "Sunnyvale", "Mountain View", "Palo Alto")
+_RENTAL_PROPERTY_TYPES = {
+    "apartment": "apartment",
+    "townhouse": "townhouse",
+    "single family": "single_family",
+}
 
 
 def _validate_bbox(west: float, south: float, east: float, north: float) -> None:
@@ -187,6 +194,176 @@ def _iso_date(value: str | None) -> str | None:
         return datetime.fromisoformat(value).date().isoformat()
     except ValueError:
         return value[:10] if len(value) >= 10 else None
+
+
+def _rental_date(value: object) -> str | None:
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        return datetime.fromisoformat(value).date().isoformat()
+    except ValueError:
+        return None
+
+
+def _rental_cutoff(today) -> str:
+    try:
+        return today.replace(year=today.year - 3).isoformat()
+    except ValueError:
+        return today.replace(year=today.year - 3, day=28).isoformat()
+
+
+def _canonical_rental_rows(items: list[dict], *, city: str, status: str) -> list[dict]:
+    """Discard contacts/MLS metadata and expand lawful rental history events."""
+    today = datetime.now(UTC).date()
+    cutoff = _rental_cutoff(today)
+    rows: dict[str, dict] = {}
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        if str(item.get("city") or "").strip().lower() != city.lower():
+            continue
+        if str(item.get("state") or "").upper() != "CA":
+            continue
+        property_type = _RENTAL_PROPERTY_TYPES.get(
+            str(item.get("propertyType") or "").strip().lower()
+        )
+        bedrooms = _number(item.get("bedrooms"))
+        if property_type is None or bedrooms is None or not bedrooms.is_integer():
+            continue
+        bedroom_count = int(bedrooms)
+        if bedroom_count not in {1, 2, 3}:
+            continue
+        property_id = str(item.get("id") or "").strip()
+        if not property_id:
+            continue
+
+        events: list[dict] = []
+        history = item.get("history")
+        if isinstance(history, dict):
+            for event in history.values():
+                if not isinstance(event, dict):
+                    continue
+                if str(event.get("event") or "").strip().lower() != "rental listing":
+                    continue
+                events.append(
+                    {
+                        **event,
+                        "availability": "inactive" if event.get("removedDate") else "unknown",
+                    }
+                )
+        events.append(
+            {
+                "price": item.get("price"),
+                "listedDate": item.get("listedDate"),
+                "removedDate": item.get("removedDate"),
+                "daysOnMarket": item.get("daysOnMarket"),
+                "lastSeenDate": item.get("lastSeenDate"),
+                "availability": status,
+            }
+        )
+
+        for event in events:
+            observed_on = _rental_date(event.get("listedDate"))
+            price = _number(event.get("price"))
+            if (
+                observed_on is None
+                or observed_on < cutoff
+                or observed_on > today.isoformat()
+                or price is None
+                or not 0 < price <= 100_000
+            ):
+                continue
+            event_seed = f"{property_id}|{observed_on}"
+            observation_id = f"rentcast:{hashlib.sha256(event_seed.encode()).hexdigest()[:32]}"
+            days_on_market = _number(event.get("daysOnMarket"))
+            if days_on_market is None:
+                days_on_market = (today - datetime.fromisoformat(observed_on).date()).days
+            baths = _number(item.get("bathrooms"))
+            sqft = _number(item.get("squareFootage"))
+            year_built = _number(item.get("yearBuilt"))
+            latitude = _number(item.get("latitude"))
+            longitude = _number(item.get("longitude"))
+            zip_code = str(item.get("zipCode") or "").strip()
+            removed_on = _rental_date(event.get("removedDate"))
+            last_seen_on = _rental_date(event.get("lastSeenDate"))
+            if removed_on and (removed_on < observed_on or removed_on > today.isoformat()):
+                removed_on = None
+            if last_seen_on and (last_seen_on < observed_on or last_seen_on > today.isoformat()):
+                last_seen_on = None
+            rows[observation_id] = {
+                "observation_id": observation_id,
+                "source": "rentcast_api",
+                "observed_on": observed_on,
+                "city": city,
+                "zip_code": zip_code if len(zip_code) == 5 and zip_code.isdigit() else None,
+                "monthly_rent": price,
+                "bedrooms": bedroom_count,
+                "bathrooms": baths if baths is not None and 0 <= baths <= 20 else None,
+                "property_type": property_type,
+                "listing_status": "new" if days_on_market <= 30 else "existing",
+                "availability_status": event.get("availability") or "unknown",
+                "sqft": sqft if sqft is not None and 100 <= sqft <= 30_000 else None,
+                "year_built": int(year_built)
+                if year_built is not None
+                and year_built.is_integer()
+                and 1800 <= year_built <= today.year + 1
+                else None,
+                "amenities": [],
+                "latitude": latitude if latitude is not None and -90 <= latitude <= 90 else None,
+                "longitude": longitude
+                if longitude is not None and -180 <= longitude <= 180
+                else None,
+                "removed_on": removed_on,
+                "last_seen_on": last_seen_on,
+            }
+    return sorted(rows.values(), key=lambda row: (row["observed_on"], row["observation_id"]))
+
+
+def fetch_city_rentals(
+    *,
+    city: str,
+    status: str,
+    days_old: int = 1095,
+    limit: int = 100,
+    settings: Settings | None = None,
+    force: bool = False,
+) -> tuple[list[dict], bool]:
+    """Fetch one bounded page of sanitized long-term rental listings."""
+    settings = settings or get_settings()
+    if not settings.has_rentcast_key:
+        return [], False
+    if city not in TARGET_RENTAL_CITIES:
+        raise ValueError("city is outside the four-city rental collection scope")
+    normalized_status = status.strip().lower()
+    if normalized_status not in {"active", "inactive"}:
+        raise ValueError("status must be active or inactive")
+    if not 1 <= days_old <= 1095 or not 1 <= limit <= 500:
+        raise ValueError("days_old must be 1-1095 and limit must be 1-500")
+    cache_key = _cache_key(
+        "city-rentals",
+        {"city": city, "status": normalized_status, "days_old": days_old, "limit": limit},
+    )
+    cached = None if force else get_cached("rentcast", cache_key, timedelta(hours=24), settings)
+    if cached is not None:
+        return cached, True
+    payload = _request(
+        RENTAL_URL,
+        {
+            "city": city,
+            "state": "CA",
+            "status": normalized_status.title(),
+            "bedrooms": "1:3",
+            "propertyType": "Apartment|Townhouse|Single Family",
+            "daysOld": f"*:{days_old}",
+            "limit": limit,
+            "offset": 0,
+        },
+        settings,
+    ).json()
+    items = payload if isinstance(payload, list) else []
+    rows = _canonical_rental_rows(items, city=city, status=normalized_status)
+    put_cached("rentcast", cache_key, rows, settings)
+    return rows, False
 
 
 def fetch_sold_bbox(

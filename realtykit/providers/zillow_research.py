@@ -15,6 +15,8 @@ from realtykit.store.facts import upsert_facts, upsert_geos
 from realtykit.store.sources import upsert_source
 
 ZILLOW_BASE = "https://files.zillowstatic.com/research/public_csvs"
+TARGET_RENTAL_CITIES = ("San Jose", "Sunnyvale", "Mountain View", "Palo Alto")
+ZORI_SOURCE_ID = "zillow:zori_city_all"
 
 DATASETS = (
     {
@@ -68,6 +70,18 @@ DATASETS = (
         "level": "zip",
         "latest_only": True,
     },
+    {
+        "source_id": ZORI_SOURCE_ID,
+        "dataset": "city_zori_all_homes_month",
+        "url": f"{ZILLOW_BASE}/zori/City_zori_uc_sfrcondomfr_sm_month.csv",
+        "dest": "zillow/City_zori_uc_sfrcondomfr_sm_month.csv",
+        "metric": "zori_all",
+        "cadence": "monthly",
+        "keep_years": 3,
+        "level": "city",
+        "target_cities": TARGET_RENTAL_CITIES,
+        "max_bytes": 20 * 1024 * 1024,
+    },
 )
 
 
@@ -77,6 +91,8 @@ def geo_id_for(region_id: str, region_type: str, name: str) -> str:
     if region_type.lower() in {"zip", "zipcode", "zcta"}:
         zip_code = str(name).strip().zfill(5)
         return f"zillow:zip:{zip_code}"
+    if region_type.lower() == "city":
+        return f"zillow:city:{region_id}"
     return f"zillow:metro:{region_id}"
 
 
@@ -97,6 +113,19 @@ def ingest(
     return outcomes
 
 
+def ingest_zori(
+    conn: sqlite3.Connection, settings: Settings | None = None, force: bool = False
+) -> list[FetchOutcome]:
+    """Ingest only official target-city ZORI aggregate series."""
+    settings = settings or get_settings()
+    http = CachedHttp(settings)
+    return [
+        _ingest_one(conn, http, spec, force)
+        for spec in DATASETS
+        if spec["source_id"] == ZORI_SOURCE_ID
+    ]
+
+
 def _ingest_one(
     conn: sqlite3.Connection, http: CachedHttp, spec: dict, force: bool
 ) -> FetchOutcome:
@@ -107,6 +136,7 @@ def _ingest_one(
             spec["dest"],
             force=force,
             probe_name=spec.get("probe"),
+            max_bytes=spec.get("max_bytes"),
         )
     except Exception as exc:  # noqa: BLE001 — provider must not abort the run
         out = FetchOutcome(
@@ -135,6 +165,11 @@ def _ingest_one(
         if spec["cadence"] == "weekly"
         else f"ZHVI month {obs}. Monthly by design — not a 7-day print."
     )
+    if spec["source_id"] == ZORI_SOURCE_ID:
+        note = (
+            f"Official city ZORI all-homes index through {obs}; filtered to four target cities. "
+            "Aggregate asking-rent index only; no bedroom or listing-status cuts."
+        )
     geos: dict[str, dict] = {}
     facts: list[dict] = []
     for row in melt_wide_csv(
@@ -142,6 +177,10 @@ def _ingest_one(
         min_period=_min_period(spec["keep_years"]),
         latest_only=bool(spec.get("latest_only")),
     ):
+        if spec.get("target_cities") and (
+            row["name"] not in spec["target_cities"] or row["state"] != "CA"
+        ):
+            continue
         gid = geo_id_for(row["region_id"], row["region_type"], row["name"])
         geos[gid] = {
             "geo_id": gid,

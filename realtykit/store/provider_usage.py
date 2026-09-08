@@ -15,8 +15,24 @@ class ProviderQuotaExceeded(RuntimeError):
     """Raised before a request that would exceed the configured local cap."""
 
 
+RENTCAST_HARD_MONTHLY_CAP = 40
+RENTCAST_HARD_WARNING_AT = 32
+
+
 def _period() -> str:
     return datetime.now(UTC).strftime("%Y-%m")
+
+
+def _policy(provider: str, settings: Settings) -> tuple[int | None, int | None]:
+    """Return the effective policy; environment values can lower, never raise, safety caps."""
+    if provider != "rentcast":
+        return None, None
+    limit = max(1, min(int(settings.rentcast_monthly_limit), RENTCAST_HARD_MONTHLY_CAP))
+    warning_at = max(
+        1,
+        min(int(settings.rentcast_warning_at), RENTCAST_HARD_WARNING_AT, limit),
+    )
+    return limit, warning_at
 
 
 def usage_snapshot(provider: str, settings: Settings | None = None) -> dict[str, Any]:
@@ -33,14 +49,13 @@ def usage_snapshot(provider: str, settings: Settings | None = None) -> dict[str,
     successful = int(row["successful_requests"]) if row else 0
     attempted = int(row["attempted_requests"]) if row else 0
     reserved = int(row["reserved_requests"]) if row else 0
-    limit = settings.rentcast_monthly_limit if provider == "rentcast" else None
-    warning_at = settings.rentcast_warning_at if provider == "rentcast" else None
-    remaining = max(0, limit - successful - reserved) if limit is not None else None
+    limit, warning_at = _policy(provider, settings)
+    remaining = max(0, limit - attempted) if limit is not None else None
     alert = None
-    if limit is not None and successful >= limit:
-        alert = f"{provider.title()} local monthly cap reached; live requests are paused."
-    elif warning_at is not None and successful >= warning_at:
-        alert = f"{provider.title()} is nearing its local monthly cap ({successful}/{limit})."
+    if limit is not None and attempted >= limit:
+        alert = f"{provider.title()} local monthly attempt cap reached; live requests are paused."
+    elif warning_at is not None and attempted >= warning_at:
+        alert = f"{provider.title()} is nearing its local monthly cap ({attempted}/{limit} attempts)."
     return {
         "provider": provider,
         "period": period,
@@ -65,16 +80,15 @@ def record_attempt(provider: str, settings: Settings | None = None) -> None:
     try:
         conn.execute("BEGIN IMMEDIATE")
         row = conn.execute(
-            "SELECT successful_requests, reserved_requests FROM provider_usage WHERE provider = ? AND period = ?",
+            "SELECT attempted_requests FROM provider_usage WHERE provider = ? AND period = ?",
             (provider, period),
         ).fetchone()
-        successful = int(row["successful_requests"]) if row else 0
-        reserved = int(row["reserved_requests"]) if row else 0
-        limit = settings.rentcast_monthly_limit if provider == "rentcast" else None
-        if limit is not None and successful + reserved >= limit:
+        attempted = int(row["attempted_requests"]) if row else 0
+        limit, _warning_at = _policy(provider, settings)
+        if limit is not None and attempted >= limit:
             conn.rollback()
             raise ProviderQuotaExceeded(
-                f"{provider.title()} local monthly cap of {limit} successful requests is reached."
+                f"{provider.title()} local monthly cap of {limit} attempted requests is reached."
             )
         conn.execute(
             """

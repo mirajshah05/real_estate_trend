@@ -18,6 +18,8 @@ from realtykit.api.routes import (
     kpis,
     map,
     outliers,
+    rental_estimate,
+    rentals,
     research,
     search,
     stocks,
@@ -56,6 +58,8 @@ app.include_router(correlation.router, prefix="/api")
 app.include_router(outliers.router, prefix="/api")
 app.include_router(stocks.router, prefix="/api")
 app.include_router(ingest.router, prefix="/api")
+app.include_router(rentals.router, prefix="/api")
+app.include_router(rental_estimate.router, prefix="/api")
 app.include_router(search.router, prefix="/api")
 app.include_router(research.router, prefix="/api")
 

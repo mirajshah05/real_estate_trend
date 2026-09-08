@@ -8,16 +8,106 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { mergeSeries, normalizeUnitInterval } from "./normalize.js";
+import { mergeSeries, summarizeSeries } from "./normalize.js";
+import { buildOverlayModel } from "./chartModels.js";
 
 const AXIS = { stroke: "#8b8ba0", fontSize: 11 };
 const GRID = { stroke: "#2a2a40" };
-const TIP = {
-  background: "#16162a",
-  border: "1px solid #2a2a40",
-  color: "#e8e8f0",
-  fontSize: 12,
-};
+const TIP = { background: "#16162a", border: "1px solid #2a2a40" };
+
+function formatDate(value, options = { month: "short", year: "numeric" }) {
+  if (!value) return "—";
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return value;
+  return new Intl.DateTimeFormat("en-US", { timeZone: "UTC", ...options }).format(
+    new Date(Date.UTC(year, month - 1, day))
+  );
+}
+
+function formatNumber(value, maximumFractionDigits = 0) {
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits }).format(value);
+}
+
+function formatValue(value, kind) {
+  if (value == null) return "—";
+  if (kind === "money") return `$${formatNumber(value)}`;
+  if (kind === "rate") return `${formatNumber(value, 2)}%`;
+  return formatNumber(value, 2);
+}
+
+function formatChange(summary, kind) {
+  if (!summary || Math.abs(summary.change) < 0.000001) return "roughly unchanged";
+  const direction = summary.change > 0 ? "up" : "down";
+  if (kind === "rate") {
+    return `${direction} ${formatNumber(Math.abs(summary.change), 2)} percentage points`;
+  }
+  return summary.changePct == null
+    ? `${direction} ${formatValue(Math.abs(summary.change), kind)}`
+    : `${direction} ${formatNumber(Math.abs(summary.changePct), 1)}%`;
+}
+
+function OverlayTooltip({ active, payload, label, rawByKey }) {
+  if (!active || !payload || !payload.length) return null;
+  return (
+    <div className="overlay-tooltip">
+      <strong>{formatDate(label, { month: "short", day: "numeric", year: "numeric" })}</strong>
+      {payload.map((entry) => {
+        const definition = rawByKey[entry.dataKey];
+        const point = definition && definition.points.find((item) => item.t === label);
+        return (
+          <div className="overlay-tooltip-row" key={entry.dataKey}>
+            <span style={{ color: definition?.color }}>{entry.name}</span>
+            <span>{formatValue(point ? point.v : null, definition && definition.kind)}</span>
+            <small>{formatNumber((Number(entry.value) || 0) * 100, 0)}% of its own range</small>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function OverlayExplanation({ definitions, from, to }) {
+  return (
+    <section className="overlay-explanation" aria-labelledby="overlay-explanation-title">
+      <h3 id="overlay-explanation-title">How to read this graph</h3>
+      <div className="overlay-guide">
+        <strong>Compare direction and timing—not dollar amounts.</strong>
+        <span>Each line is independently scaled: 0 is that series’ low and 100 is its high during the shared {formatDate(from)}–{formatDate(to)} window.</span>
+        <span>Example: blue at 80 means home values are 80% of the way from their period low to high. White at 80 means the same relative position for stocks; it does not mean the two values are equal.</span>
+      </div>
+      <div className="overlay-series-grid">
+        {definitions.map((definition) => {
+          const summary = summarizeSeries(definition.points);
+          if (!summary) return null;
+          return (
+            <article className="overlay-series-card" key={definition.key}>
+              <div className="overlay-series-heading">
+                <span className="overlay-series-dot" style={{ background: definition.color }} />
+                <strong>{definition.label}</strong>
+              </div>
+              <p>{definition.description}</p>
+              <div className="overlay-series-stat">
+                <span>Latest</span>
+                <strong>{formatValue(summary.latest.v, definition.kind)}</strong>
+              </div>
+              <div className="overlay-series-stat">
+                <span>Since {formatDate(summary.start.t)}</span>
+                <strong>{formatChange(summary, definition.kind)}</strong>
+              </div>
+              <div className="overlay-series-stat">
+                <span>Position in this range</span>
+                <strong>{formatNumber(summary.rangePosition, 0)} / 100</strong>
+              </div>
+              <small className="overlay-series-meta">
+                {definition.source} · {definition.cadence} · {summary.count} observations · {formatDate(summary.start.t)}–{formatDate(summary.latest.t)}
+              </small>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
 function ChartFrame({ children }) {
   return <div className="chart-wrap">{children}</div>;
@@ -84,74 +174,45 @@ export function HousingTrendChart({ series }) {
 }
 
 export function OverlayChart({ series }) {
-  const housing =
-    series.zhvi ||
-    series.typical_value ||
-    series.median_list_price ||
-    series.home_value ||
-    [];
-  const gspc = series.gspc || series.GSPC || series.spx || series["^GSPC"] || [];
-  const mortgage =
-    series.mortgage_30y ||
-    series.MORTGAGE30US ||
-    series.mortgage ||
-    series.rates ||
-    [];
-
-  const named = {};
-  if (housing.length) named.housing = normalizeUnitInterval(housing);
-  if (gspc.length) named.gspc = normalizeUnitInterval(gspc);
-  if (mortgage.length) named.mortgage = normalizeUnitInterval(mortgage);
-  const rows = mergeSeries(named);
+  const { definitions, rows, rawByKey, from, to } = buildOverlayModel(series || {});
 
   if (!rows.length) {
     return null;
   }
 
   return (
-    <ChartFrame>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-          <CartesianGrid {...GRID} vertical={false} />
-          <XAxis dataKey="t" tick={AXIS} minTickGap={28} />
-          <YAxis tick={AXIS} domain={[0, 1]} width={28} />
-          <Tooltip contentStyle={TIP} />
-          <Legend wrapperStyle={{ fontSize: 11, color: "#8b8ba0" }} />
-          {named.housing && (
-            <Line
-              type="monotone"
-              dataKey="housing"
-              name="Home value"
-              stroke="#4361ee"
-              dot={false}
-              strokeWidth={1.6}
-              connectNulls
+    <>
+      <ChartFrame>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <CartesianGrid {...GRID} vertical={false} />
+            <XAxis dataKey="t" tick={AXIS} minTickGap={28} />
+            <YAxis
+              tick={AXIS}
+              ticks={[0, 0.5, 1]}
+              domain={[0, 1]}
+              width={36}
+              tickFormatter={(value) => Math.round(value * 100)}
+              label={{ value: "Own range", angle: -90, position: "insideLeft", fill: "#8b8ba0", fontSize: 9 }}
             />
-          )}
-          {named.gspc && (
-            <Line
-              type="monotone"
-              dataKey="gspc"
-              name="^GSPC"
-              stroke="#e8e8f0"
-              dot={false}
-              strokeWidth={1.4}
-              connectNulls
-            />
-          )}
-          {named.mortgage && (
-            <Line
-              type="monotone"
-              dataKey="mortgage"
-              name="Mortgage"
-              stroke="#c9a227"
-              dot={false}
-              strokeWidth={1.4}
-              connectNulls
-            />
-          )}
-        </LineChart>
-      </ResponsiveContainer>
-    </ChartFrame>
+            <Tooltip content={<OverlayTooltip rawByKey={rawByKey} />} />
+            <Legend wrapperStyle={{ fontSize: 11, color: "#8b8ba0" }} />
+            {definitions.map((definition) => (
+              <Line
+                key={definition.key}
+                type="monotone"
+                dataKey={definition.key}
+                name={definition.label}
+                stroke={definition.color}
+                dot={false}
+                strokeWidth={definition.key === "housing" ? 2.4 : 1.8}
+                connectNulls
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </ChartFrame>
+      <OverlayExplanation definitions={definitions} from={from} to={to} />
+    </>
   );
 }

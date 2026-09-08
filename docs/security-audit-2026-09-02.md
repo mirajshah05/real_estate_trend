@@ -20,8 +20,8 @@ permissions, and GitHub security status.
   failures now log exception type/status rather than a URL containing its key.
 - Added loopback client and Host checks to quota-consuming provider endpoints;
   the CLI continues to reject non-loopback binds.
-- Added atomic in-flight reservations before RentCast calls, a 45-request
-  warning, and a hard 50-successful-request local cap.
+- Added atomic in-flight reservations before RentCast calls, a 32-attempt
+  warning, and a non-overridable hard 40-attempt local cap; failures count.
 - Restricted the SQLite database and sidecars to mode `0600`.
 - Expanded `.gitignore` for `.envrc`, private SSH key names, service-account
   files, secret YAML files, and SQLite 3 databases.

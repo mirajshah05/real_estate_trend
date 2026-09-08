@@ -29,8 +29,8 @@ class Settings(BaseSettings):
     fred_api_key: str | None = Field(default=None, validation_alias="FRED_API_KEY")
     rentcast_api_key: str | None = Field(default=None, validation_alias="RENTCAST_API_KEY")
     attom_api_key: str | None = Field(default=None, validation_alias="ATTOM_API_KEY")
-    rentcast_monthly_limit: int = Field(default=50, validation_alias="RENTCAST_MONTHLY_LIMIT")
-    rentcast_warning_at: int = Field(default=45, validation_alias="RENTCAST_WARNING_AT")
+    rentcast_monthly_limit: int = Field(default=40, validation_alias="RENTCAST_MONTHLY_LIMIT")
+    rentcast_warning_at: int = Field(default=32, validation_alias="RENTCAST_WARNING_AT")
     user_agent: str = Field(
         default="RealtyKit/0.1 (local housing dashboard)",
         validation_alias="REALTYKIT_USER_AGENT",

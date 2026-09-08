@@ -88,6 +88,8 @@ export default function MapPanel({
   onBounds,
   staleLayer,
   staleNote,
+  focusedListing,
+  onFocusListing,
 }) {
   const values = useMemo(
     () => cities.map((c) => cityMetric(c, metric)).filter((v) => v != null),
@@ -200,11 +202,14 @@ export default function MapPanel({
             center={[l.lat, l.lon]}
             radius={l.outlier_score != null && l.outlier_score >= 3 ? 6 : 4}
             pathOptions={{
-              color: l.outlier_score != null && l.outlier_score >= 3 ? "#e9c46a" : "#e8e8f0",
-              weight: 1,
+              color: focusedListing && focusedListing.listing_id === l.listing_id
+                ? "#ffffff"
+                : l.outlier_score != null && l.outlier_score >= 3 ? "#e9c46a" : "#e8e8f0",
+              weight: focusedListing && focusedListing.listing_id === l.listing_id ? 3 : 1,
               fillColor: "#e8e8f0",
               fillOpacity: 0.85,
             }}
+            eventHandlers={{ click: () => onFocusListing && onFocusListing(l) }}
           >
             <Tooltip className="rk-tip" direction="top">
               <div>

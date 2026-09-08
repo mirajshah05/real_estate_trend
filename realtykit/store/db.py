@@ -120,6 +120,49 @@ CREATE TABLE IF NOT EXISTS ingest_runs (
   summary_json     TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS rental_imports (
+  import_id        TEXT PRIMARY KEY,
+  filename         TEXT NOT NULL,
+  file_format      TEXT NOT NULL CHECK (file_format IN ('csv', 'json')),
+  content_sha256   TEXT NOT NULL,
+  row_count        INTEGER NOT NULL,
+  inserted         INTEGER NOT NULL,
+  updated          INTEGER NOT NULL,
+  imported_at      TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS rental_observations (
+  observation_id   TEXT PRIMARY KEY,
+  import_id        TEXT NOT NULL,
+  source           TEXT NOT NULL,
+  observed_on      TEXT NOT NULL,
+  city             TEXT NOT NULL CHECK (
+    city IN ('San Jose', 'Sunnyvale', 'Mountain View', 'Palo Alto')
+  ),
+  zip_code         TEXT,
+  neighborhood     TEXT,
+  monthly_rent     REAL NOT NULL CHECK (monthly_rent > 0 AND monthly_rent <= 100000),
+  bedrooms         INTEGER NOT NULL CHECK (bedrooms BETWEEN 1 AND 3),
+  bathrooms        REAL CHECK (bathrooms IS NULL OR bathrooms BETWEEN 0 AND 20),
+  property_type    TEXT NOT NULL CHECK (
+    property_type IN ('apartment', 'townhouse', 'single_family')
+  ),
+  listing_status   TEXT NOT NULL CHECK (listing_status IN ('new', 'existing')),
+  availability_status TEXT NOT NULL DEFAULT 'unknown' CHECK (
+    availability_status IN ('active', 'inactive', 'unknown')
+  ),
+  sqft             REAL CHECK (sqft IS NULL OR sqft BETWEEN 100 AND 30000),
+  year_built       INTEGER,
+  amenities_json   TEXT NOT NULL DEFAULT '[]',
+  latitude         REAL CHECK (latitude IS NULL OR latitude BETWEEN -90 AND 90),
+  longitude        REAL CHECK (longitude IS NULL OR longitude BETWEEN -180 AND 180),
+  removed_on       TEXT,
+  last_seen_on     TEXT,
+  imported_at      TEXT NOT NULL,
+  FOREIGN KEY (import_id) REFERENCES rental_imports(import_id)
+    DEFERRABLE INITIALLY DEFERRED
+);
+
 CREATE TABLE IF NOT EXISTS government_areas (
   area_id           TEXT PRIMARY KEY,
   name              TEXT NOT NULL,
@@ -143,6 +186,11 @@ CREATE INDEX IF NOT EXISTS idx_listings_geo ON listings (geo_id);
 CREATE INDEX IF NOT EXISTS idx_sale_events_date ON sale_events (sale_date);
 CREATE INDEX IF NOT EXISTS idx_sale_events_location ON sale_events (lat, lon);
 CREATE INDEX IF NOT EXISTS idx_government_areas_county ON government_areas (state, county);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_rental_imports_sha ON rental_imports (content_sha256);
+CREATE INDEX IF NOT EXISTS idx_rentals_city_date ON rental_observations (city, observed_on);
+CREATE INDEX IF NOT EXISTS idx_rentals_segments ON rental_observations (
+  city, bedrooms, property_type, listing_status, observed_on
+);
 """
 
 
@@ -161,6 +209,22 @@ def connect(settings: Settings | None = None) -> sqlite3.Connection:
             "ALTER TABLE provider_usage ADD COLUMN reserved_requests INTEGER NOT NULL DEFAULT 0"
         )
         conn.commit()
+    rental_cols = {r[1] for r in conn.execute("PRAGMA table_info(rental_observations)").fetchall()}
+    rental_additions = {
+        "availability_status": "TEXT NOT NULL DEFAULT 'unknown'",
+        "latitude": "REAL",
+        "longitude": "REAL",
+        "removed_on": "TEXT",
+        "last_seen_on": "TEXT",
+    }
+    for column, declaration in rental_additions.items():
+        if column not in rental_cols:
+            conn.execute(f"ALTER TABLE rental_observations ADD COLUMN {column} {declaration}")
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_rentals_availability "
+        "ON rental_observations (city, availability_status, observed_on)"
+    )
+    conn.commit()
     for private_path in (path, Path(f"{path}-wal"), Path(f"{path}-shm")):
         if private_path.exists():
             os.chmod(private_path, 0o600)

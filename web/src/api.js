@@ -18,13 +18,14 @@ const FIXTURE_MAP = {
 };
 
 export class ApiError extends Error {
-  constructor(message, { status = 0, code = "network", path = "", offline = false } = {}) {
+  constructor(message, { status = 0, code = "network", path = "", offline = false, details = null } = {}) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
     this.path = path;
     this.offline = offline;
+    this.details = details;
   }
 }
 
@@ -106,6 +107,7 @@ export async function getJson(path, { signal } = {}) {
       code: (body && body.error && body.error.code) || "http_error",
       path,
       offline,
+      details: body && body.error && body.error.details,
     });
   }
 
@@ -142,6 +144,7 @@ export async function postJson(path, body) {
         code: (payload && payload.error && payload.error.code) || "http_error",
         path,
         offline: res.status === 502 || res.status === 503 || res.status === 504,
+        details: payload && payload.error && payload.error.details,
       }
     );
   }
@@ -220,6 +223,14 @@ export const paths = {
     return `${url.pathname}${url.search}`;
   },
   stockDips: "/api/stocks/dips",
+  rentalTrends: (city, months = 12) => {
+    const url = new URL("/api/rentals/trends", "http://local.invalid");
+    if (city) url.searchParams.set("city", city);
+    url.searchParams.set("months", String(months));
+    return `${url.pathname}${url.search}`;
+  },
+  rentalImport: "/api/rentals/import",
+  rentalEstimate: "/api/rentals/estimate",
   refresh: "/api/ingest/refresh",
 };
 

@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "test": "node --test src/chartModels.test.js",
+    "check": "npm run test && npm run build",
     "build": "vite build",
     "preview": "vite preview"
   },

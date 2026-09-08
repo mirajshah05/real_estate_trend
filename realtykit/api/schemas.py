@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -268,6 +268,94 @@ class IngestRefreshResponse(ForbidModel):
     run_id: str
     ok: bool
     outcomes: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class RentalImportBody(ForbidModel):
+    filename: str = Field(min_length=1, max_length=128)
+    format: Literal["csv", "json"]
+    content: str = Field(min_length=1, max_length=5 * 1024 * 1024)
+
+
+class RentalImportResponse(ForbidModel):
+    import_id: str
+    inserted: int
+    updated: int
+    rejected: int = 0
+    cities: list[str]
+    date_min: str
+    date_max: str
+
+
+class RentalTrendSegment(ForbidModel):
+    month: str
+    bedrooms: int
+    property_type: str
+    listing_status: str
+    availability_status: str = "unknown"
+    count: int
+    median_rent: float
+    average_rent: float
+    min_rent: float
+    max_rent: float
+
+
+class RentalMarketIndexPoint(ForbidModel):
+    month: str
+    value: float
+
+
+class RentalMarketIndex(ForbidModel):
+    provider: str
+    source_id: str
+    metric: str
+    home_type: str
+    city: str
+    as_of: str
+    points: list[RentalMarketIndexPoint] = Field(default_factory=list)
+
+
+class RentalTrendsResponse(ForbidModel):
+    city: str
+    months: int
+    date_from: str
+    date_to: str
+    observation_count: int
+    first_observed_on: str | None = None
+    last_observed_on: str | None = None
+    segments: list[RentalTrendSegment] = Field(default_factory=list)
+    market_indices: list[RentalMarketIndex] = Field(default_factory=list)
+    rentcast_usage: ProviderUsage | None = None
+
+
+class StoredRentalObservation(ForbidModel):
+    observation_id: str
+    import_id: str
+    source: str
+    observed_on: str
+    city: str
+    zip_code: str | None = None
+    neighborhood: str | None = None
+    monthly_rent: float
+    bedrooms: int
+    bathrooms: float | None = None
+    property_type: str
+    listing_status: str
+    availability_status: str = "unknown"
+    sqft: float | None = None
+    year_built: int | None = None
+    amenities: list[str] = Field(default_factory=list)
+    latitude: float | None = None
+    longitude: float | None = None
+    removed_on: str | None = None
+    last_seen_on: str | None = None
+    imported_at: str
+
+
+class RentalObservationsResponse(ForbidModel):
+    total: int
+    limit: int
+    offset: int
+    observations: list[StoredRentalObservation] = Field(default_factory=list)
 
 
 class ApiError(ForbidModel):
