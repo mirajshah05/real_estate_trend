@@ -6,19 +6,23 @@ import ResearchPanel from "./ResearchPanel.jsx";
 import RentalsPanel from "./RentalsPanel.jsx";
 import SourcesPanel from "./SourcesPanel.jsx";
 import StockDips from "./StockDips.jsx";
+import TaskLanding from "./TaskLanding.jsx";
+import SimilarHomesPanel from "./SimilarHomesPanel.jsx";
 import { ListingsPanel, SalesPanel } from "./PropertyTable.jsx";
 import { EmptyState, ErrorState, LoadingState, OfflinePanel } from "./StatusState.jsx";
 
 const TABS = [
+  { id: "overview", label: "Start here", scope: "NEXT STEPS" },
+  { id: "similar", label: "Similar homes", scope: "YOUR SEARCH" },
+  { id: "rentals", label: "Rent intelligence", scope: "BAY AREA" },
   { id: "trends", label: "Trends", scope: "AREA" },
-  { id: "homes", label: "Homes", scope: "VIEWPORT" },
   { id: "sales", label: "Sales", scope: "VIEWPORT" },
+  { id: "homes", label: "Map listings", scope: "VIEWPORT" },
   { id: "overlay", label: "Overlay", scope: "AREA × US" },
   { id: "corr", label: "Correlation", scope: "AREA × US" },
   { id: "outliers", label: "Outliers", scope: "AREA / US" },
   { id: "dips", label: "Dips", scope: "US" },
   { id: "research", label: "Research", scope: "AREA + US" },
-  { id: "rentals", label: "Rentals", scope: "BAY AREA" },
   { id: "sources", label: "Sources", scope: "GLOBAL" },
 ];
 
@@ -49,6 +53,8 @@ export default function Dock({
   salesState,
   onLoadSales,
   canLoadSales,
+  onZoom,
+  searchCities,
   propertyFocus,
   focusedListing,
   onFocusListing,
@@ -76,16 +82,16 @@ export default function Dock({
 
   return (
     <aside className="dock">
-      <KpiStrip kpis={kpis} />
+      {!["overview", "similar", "rentals", "sources"].includes(tab) && <KpiStrip kpis={kpis} />}
       <div className="workspace-controls" aria-label="Workspace layout">
-        <span>{propertyFocus ? "Gallery view · close zoom" : researchFocus ? "Research focus" : "Map + analysis"}</span>
+        <span>{tab === "similar" ? "Home search" : tab === "rentals" ? "Rental research" : geoLabel}</span>
         <div className="seg">
           <button type="button" aria-pressed={!researchFocus} className={!researchFocus ? "active" : ""} onClick={() => onResearchFocus(false)}>Map + data</button>
-          <button type="button" aria-pressed={researchFocus} className={researchFocus ? "active" : ""} onClick={() => onResearchFocus(true)}>Focus research</button>
+          <button type="button" aria-pressed={researchFocus} className={researchFocus ? "active" : ""} onClick={() => onResearchFocus(true)}>Full screen</button>
         </div>
       </div>
       <nav className="dock-tabs">
-        {TABS.map((t) => (
+        {TABS.slice(0, 5).map((t) => (
           <button
             key={t.id}
             type="button"
@@ -93,16 +99,21 @@ export default function Dock({
             onClick={() => onTab(t.id)}
           >
             {t.label}
-            <small>{t.scope}</small>
           </button>
         ))}
       </nav>
+      <details className="more-tools" open={TABS.slice(5).some(item => item.id === tab) || undefined}>
+        <summary>More research tools &amp; data sources</summary>
+        <nav className="dock-tabs">{TABS.slice(5).map(t => <button key={t.id} type="button" className={tab === t.id ? "active" : ""} onClick={() => onTab(t.id)}>{t.label}</button>)}</nav>
+      </details>
       <div className="dock-body">
-        <div className="scope-bar">
+        {!["overview", "similar"].includes(tab) && <div className="scope-bar">
           <strong>{selectedTab ? selectedTab.scope : "AREA"}</strong>
           <span>{scopeDescription(tab, areaContext)}</span>
-        </div>
+        </div>}
         {apiOnline === false && <OfflinePanel />}
+        {tab === "overview" && <TaskLanding selected={selected} onTab={onTab} />}
+        {tab === "similar" && <SimilarHomesPanel selected={selected} cities={searchCities} />}
 
         {apiOnline !== false && tab === "trends" && (
           <>
@@ -133,7 +144,7 @@ export default function Dock({
         )}
 
         {apiOnline !== false && tab === "sales" && (
-          <SalesPanel sales={sales} state={salesState} onLoad={onLoadSales} canLoad={canLoadSales} />
+          <SalesPanel sales={sales} state={salesState} onLoad={onLoadSales} canLoad={canLoadSales} onZoom={onZoom} areaLabel={geoLabel} />
         )}
 
         {apiOnline !== false && tab === "overlay" && (

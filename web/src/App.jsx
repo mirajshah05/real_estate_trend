@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getApiOrFixture, paths, postJson } from "./api.js";
+import { getApiOrFixture, getJson, paths, postJson } from "./api.js";
 import Dock from "./components/Dock.jsx";
 import FreshnessBanner from "./components/FreshnessBanner.jsx";
 import MapPanel from "./MapPanel.jsx";
@@ -32,6 +32,12 @@ function routeGeoId(pathname) {
   }
 }
 
+function marketSelection(city) {
+  if (!city) return null;
+  const marketId = city.market_geo_id || city.geo_id;
+  return marketId && marketId !== city.geo_id ? { ...city, area_geo_id: city.geo_id, geo_id: marketId } : city;
+}
+
 function Dashboard() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -49,7 +55,7 @@ function Dashboard() {
   const [salesState, setSalesState] = useState({ loading: false, error: null, usage: null, cached: false });
   const [selected, setSelected] = useState(null);
   const [metric, setMetric] = useState("price_change_yoy");
-  const [tab, setTab] = useState(location.pathname === "/sources" ? "sources" : "trends");
+  const [tab, setTab] = useState(location.pathname === "/sources" ? "sources" : "overview");
   const [refreshing, setRefreshing] = useState(false);
   const [bounds, setBounds] = useState(null);
   const [researchFocus, setResearchFocus] = useState(false);
@@ -61,6 +67,10 @@ function Dashboard() {
   const [rentalImportState, setRentalImportState] = useState({ loading: false, error: null, data: null });
   const [rentalEstimateState, setRentalEstimateState] = useState({ loading: false, error: null, data: null });
   const rentalRequestRef = useRef(0);
+  const salesRequestRef = useRef(0);
+  const geoRequestRef = useRef(0);
+  const pendingSelectionRef = useRef(null);
+  const [zoomRequest, setZoomRequest] = useState(0);
 
   const [kpis, setKpis] = useState(null);
   const [kpisState, setKpisState] = useState({ loading: true, error: null, data: null });
@@ -94,9 +104,10 @@ function Dashboard() {
   const selectCity = useCallback(
     (city) => {
       if (!city) return;
+      pendingSelectionRef.current = city;
       setSelected(city);
       if (city.geo_id) {
-        navigate(`/city/${encodeURIComponent(city.geo_id)}`, { replace: true });
+        navigate(`/city/${encodeURIComponent(city.area_geo_id || city.geo_id)}`, { replace: true });
       }
     },
     [navigate]
@@ -115,12 +126,11 @@ function Dashboard() {
 
     if (mapRes.data) {
       const list = normalizeCities(mapRes.data);
+      const areas = governmentRes.data ? normalizeGovernmentAreas(governmentRes.data) : [];
       setCities(list);
-      setGovernmentAreas(
-        governmentRes.data ? normalizeGovernmentAreas(governmentRes.data) : []
-      );
+      setGovernmentAreas(areas);
       setCitiesError(null);
-      return list;
+      return [...areas, ...list];
     }
     setCities([]);
     setGovernmentAreas(
@@ -131,6 +141,7 @@ function Dashboard() {
   }, []);
 
   const loadGeo = useCallback(async (geoId) => {
+    const requestId = ++geoRequestRef.current;
     const id = geoId || "nation:US";
     setKpisState({ loading: true, error: null, data: null });
     setTrendsState({ loading: true, error: null, data: null });
@@ -145,6 +156,7 @@ function Dashboard() {
       getApiOrFixture(paths.outliers(id)),
       getApiOrFixture(paths.research(id)),
     ]);
+    if (requestId !== geoRequestRef.current) return;
 
     if ([k, t, c, o, r].some((item) => item.source === "api")) setApiOnline(true);
     applySlice(k, setKpis, setKpisState, (d) => d);
@@ -173,7 +185,7 @@ function Dashboard() {
         (routeGeo && list.find((c) => c.geo_id === routeGeo)) ||
         list.find((c) => /united states/i.test(c.name)) ||
         null;
-      const geo = match || {
+      const geo = marketSelection(match) || {
         geo_id: routeGeo || nationalGeoId(list),
         name: match ? match.name : "United States",
         lat: match && match.lat != null ? match.lat : 39.8,
@@ -194,17 +206,29 @@ function Dashboard() {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!selected || !routeGeo || selected.geo_id === routeGeo) return;
-    const match = cities.find((c) => c.geo_id === routeGeo);
+    const pending = pendingSelectionRef.current;
+    if (pending) {
+      if ((pending.area_geo_id || pending.geo_id) === routeGeo) {
+        pendingSelectionRef.current = null;
+        setSelected(pending);
+      }
+      return;
+    }
+    if (!selected || !routeGeo || (selected.area_geo_id || selected.geo_id) === routeGeo) return;
+    const match = marketSelection([...governmentAreas, ...cities].find((c) => c.geo_id === routeGeo));
     if (match) {
       setSelected(match);
       loadGeo(match.geo_id);
     }
-  }, [routeGeo, cities, selected, loadGeo]);
+  }, [routeGeo, cities, governmentAreas, selected, loadGeo]);
 
   useEffect(() => {
+    salesRequestRef.current += 1;
     setSales([]);
-    setSalesState({ loading: false, error: null, usage: null, cached: false });
+    setSalesState({ loading: false, error: null, usage: null, cached: false, loaded: false });
+  }, [bounds]);
+
+  useEffect(() => {
     if (!bounds || bounds.zoom < 10) {
       setListings([]);
       setListingsMeta({ loading: false, error: null, usage: null, cached: false });
@@ -248,12 +272,22 @@ function Dashboard() {
 
   const loadSales = useCallback(async () => {
     if (!bounds || bounds.zoom < 10) return;
+    const requestId = ++salesRequestRef.current;
     const bbox = `${bounds.west},${bounds.south},${bounds.east},${bounds.north}`;
+    setSales([]);
     setSalesState((current) => ({ ...current, loading: true, error: null }));
-    const res = await getApiOrFixture(paths.mapSales(bbox));
+    let res;
+    try {
+      res = { data: await getJson(paths.mapSales(bbox)), error: null };
+    } catch (error) {
+      res = { data: null, error };
+    }
+    if (requestId !== salesRequestRef.current) return;
     setSales(res.data ? normalizeSales(res.data) : []);
     setSalesState({
       loading: false,
+      loaded: Boolean(res.data),
+      evidence: res.data ? { query_bounds: res.data.query_bounds, record_limit: res.data.record_limit, date_from: res.data.date_from, date_to: res.data.date_to } : null,
       error: res.error,
       usage: res.data && res.data.usage,
       cached: Boolean(res.data && res.data.cached),
@@ -320,8 +354,11 @@ function Dashboard() {
 
   const onSelectCity = (city) => {
     if (!city) return;
+    setTab("overview");
+    setResearchFocus(false);
+    if (["San Jose", "Sunnyvale", "Mountain View", "Palo Alto"].includes(city.name)) setRentalCity(city.name);
     const marketId = city.market_geo_id || city.geo_id;
-    const target = marketId && marketId !== city.geo_id ? { ...city, geo_id: marketId } : city;
+    const target = marketSelection(city);
     selectCity(target);
     if (marketId) loadGeo(marketId);
   };
@@ -333,8 +370,10 @@ function Dashboard() {
 
   const onTab = (next) => {
     setTab(next);
-    if (next === "rentals") setResearchFocus(true);
+    if (next === "rentals" && ["San Jose", "Sunnyvale", "Mountain View", "Palo Alto"].includes(selected?.name)) setRentalCity(selected.name);
+    setResearchFocus(next === "rentals" || next === "similar");
     if (next === "sources") navigate("/sources", { replace: true });
+    else if (location.pathname === "/sources") navigate(selected?.geo_id ? `/city/${encodeURIComponent(selected.area_geo_id || selected.geo_id)}` : "/", { replace: true });
   };
 
   const onFocusListing = (listing) => {
@@ -365,6 +404,11 @@ function Dashboard() {
         onRefresh={onRefresh}
         onOpenSources={() => onTab("sources")}
       />
+      <nav className="taskbar" aria-label="Main tasks">
+        <button type="button" className={tab === "overview" ? "active" : ""} onClick={() => onTab("overview")}>Explore markets</button>
+        <button type="button" className={tab === "similar" ? "active" : ""} onClick={() => onTab("similar")}>Find similar homes</button>
+        <button type="button" className={tab === "rentals" ? "active" : ""} onClick={() => onTab("rentals")}>Rent intelligence</button>
+      </nav>
       <div className={`main${researchFocus ? " research-focus" : ""}${propertyFocus ? " property-focus" : ""}`}>
         {!researchFocus && <MapPanel
           cities={cities}
@@ -376,6 +420,7 @@ function Dashboard() {
           metric={metric}
           onMetric={setMetric}
           selected={selected}
+          zoomRequest={zoomRequest}
           marketLabel={marketLabel}
           onSelect={onSelectCity}
           onBounds={setBounds}
@@ -411,6 +456,8 @@ function Dashboard() {
           salesState={salesState}
           onLoadSales={loadSales}
           canLoadSales={Boolean(bounds && bounds.zoom >= 10)}
+          onZoom={() => { setResearchFocus(false); setZoomRequest(value => value + 1); }}
+          searchCities={[...governmentAreas, ...cities]}
           propertyFocus={propertyFocus}
           focusedListing={focusedListing}
           onFocusListing={setFocusedListing}
@@ -439,7 +486,7 @@ function Dashboard() {
           <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">
             CARTO
           </a>
-          . Data: Zillow Research · Redfin Data Center · FRED · Yahoo Finance · Census · county GIS.
+          . Data: Zillow Research · Redfin Data Center · RentCast · FRED · Yahoo Finance · Census · county GIS.
         </span>
         <span>Local dashboard · observation as-of is the freshness clock</span>
       </footer>

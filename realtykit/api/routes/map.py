@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -331,6 +331,14 @@ def map_listings(
             detail={"code": "bbox_required", "message": "Listing map requires a viewport bbox."},
         )
     west, south, east, north = _listing_bbox(bbox)
+    if not settings.has_rentcast_key:
+        raise HTTPException(
+            503,
+            detail={
+                "code": "provider_key_missing",
+                "message": "RentCast is not configured in the running backend. Add RENTCAST_API_KEY and restart the backend.",
+            },
+        )
     listings: list[Listing] = []
     cached = False
     if settings.has_rentcast_key:
@@ -387,16 +395,15 @@ def map_listings(
         except httpx.HTTPStatusError as exc:
             status = exc.response.status_code
             message = (
-                "RentCast key is saved, but its API subscription is not active yet. "
-                "Activate a plan in the RentCast dashboard."
-                if status == 403
+                "RentCast denied this request. Check the API key and plan access in the RentCast dashboard."
+                if status in {401, 403}
                 else f"RentCast returned HTTP {status}."
             )
             raise HTTPException(
                 status_code=502,
                 detail={
-                    "code": "provider_subscription_inactive"
-                    if status == 403
+                    "code": "provider_auth_denied"
+                    if status in {401, 403}
                     else "provider_unavailable",
                     "message": message,
                 },
@@ -441,6 +448,14 @@ def map_sales(
             detail={"code": "bbox_required", "message": "Sale map requires a viewport bbox."},
         )
     west, south, east, north = _listing_bbox(bbox)
+    if not settings.has_rentcast_key:
+        raise HTTPException(
+            503,
+            detail={
+                "code": "provider_key_missing",
+                "message": "RentCast is not configured in the running backend. Add RENTCAST_API_KEY and restart the backend.",
+            },
+        )
     sales: list[SaleEvent] = []
     cached = False
     if settings.has_rentcast_key:
@@ -470,16 +485,15 @@ def map_sales(
         except httpx.HTTPStatusError as exc:
             status = exc.response.status_code
             message = (
-                "RentCast key is saved, but its API subscription is not active yet. "
-                "Activate a plan in the RentCast dashboard."
-                if status == 403
+                "RentCast denied this request. Check the API key and plan access in the RentCast dashboard."
+                if status in {401, 403}
                 else f"RentCast returned HTTP {status}."
             )
             raise HTTPException(
                 status_code=502,
                 detail={
-                    "code": "provider_subscription_inactive"
-                    if status == 403
+                    "code": "provider_auth_denied"
+                    if status in {401, 403}
                     else "provider_unavailable",
                     "message": message,
                 },
@@ -503,6 +517,10 @@ def map_sales(
         usage=usage_snapshot("rentcast", settings) if settings.has_rentcast_key else None,
         cached=cached,
         lookback_days=lookback_days,
+        query_bounds=[west, south, east, north],
+        record_limit=limit,
+        date_from=(datetime.now(UTC).date() - timedelta(days=lookback_days)).isoformat(),
+        date_to=datetime.now(UTC).date().isoformat(),
         note=(
             "RentCast property-record sale events for the visible viewport. Owner and assessment "
             "fields are discarded. County recording delays can be several weeks or months."

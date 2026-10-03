@@ -34,13 +34,14 @@ export default function FreshnessBanner({
         <div className="banner-brand">RealtyKit</div>
         <div className="banner-honesty">{honesty}</div>
         <div className="banner-actions">
+          <button type="button" onClick={onOpenSources}>Data sources</button>
           {apiOnline === false && <span className="chip warn">API offline</span>}
           <button type="button" onClick={onRefresh} disabled={refreshing || apiOnline === false}>
             {refreshing ? "Refreshing" : "Refresh"}
           </button>
         </div>
       </div>
-      <div className="banner-chips">
+      <details className="source-details"><summary>{stalePresent ? "Some datasets are historical · view freshness" : "View data freshness"}</summary><div className="banner-chips">
         {rows.map((row) => (
           <button
             key={row.id}
@@ -59,7 +60,7 @@ export default function FreshnessBanner({
             Observation age is the SLA clock — a new file is not a live week
           </span>
         )}
-      </div>
+      </div></details>
     </header>
   );
 }

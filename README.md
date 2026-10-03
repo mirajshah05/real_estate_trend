@@ -33,6 +33,10 @@ use their public research datasets rather than consumer-page scraping.
 ## What the application provides
 
 - Search by US city, ZIP code, or street address.
+- A task menu with similar-home search, rent intelligence, and market research; selecting a map location shows next steps.
+- Find similar active homes for sale or long-term rentals from an address or requirements (radius, home type, bedrooms, bathrooms, budget and size). RentCast is required; address lookup fills editable filters from known property facts and excludes the reference home from matches.
+- Address searches default to exact bedroom and bathroom counts, with optional "At least" matching. Results explain the active filters and display 10 homes per page, sorted by nearest, lowest price or highest price across the retrieved sample. Paging and sorting make no provider calls.
+- Recorded sales show provider provenance, source field, search bounds/window, retrieval date, missing-price counts and the cities represented. These are provider-reported events, not independently verified county deeds. Sale results are paginated with recent-sale and price sorting.
 - Metro and ZIP-level housing maps where source data is available.
 - Typical home value, inventory, new-listing, and days-on-market trends.
 - Stock-market dips and housing/stock/mortgage correlation views.
@@ -288,7 +292,7 @@ For the government-only snapshot structure, see
 
 ## Freshness model
 
-Every API response includes a freshness block. RealtyKit keeps separate clocks:
+Market-data responses include a freshness block; home-search results carry observation dates per listing. RealtyKit keeps separate clocks:
 
 - `observation_as_of`: when the underlying market measurement applies.
 - `http_last_modified`: when the publisher changed the downloadable file.
@@ -354,6 +358,9 @@ FastAPI generates live OpenAPI documentation at <http://127.0.0.1:8770/docs>.
 | `GET /api/map/zips?bbox=...` | ZIP inventory features inside a bounded viewport |
 | `GET /api/map/listings?bbox=...` | Active listing pins when RentCast is configured |
 | `GET /api/map/sales?bbox=...` | On-demand sanitized property-record sale events when RentCast is configured |
+| `GET /api/homes/status` | Local RentCast configuration presence and monthly usage; no provider call |
+| `POST /api/homes/subject` | Look up public property facts from a full reference address |
+| `POST /api/homes/search` | Search one page of up to 100 active sale or rental listings; enforce filters locally and sort matches by distance |
 | `GET /api/search?q=...` | Metro, city, ZIP, and address search |
 | `GET /api/research?geo_id=...` | Area research, provenance, context, and limitations |
 | `GET /api/kpis?geo_id=...` | Current KPI strip |
@@ -364,6 +371,8 @@ FastAPI generates live OpenAPI documentation at <http://127.0.0.1:8770/docs>.
 | `POST /api/ingest/refresh` | Start a local provider refresh |
 
 Example requests:
+
+Home searches run only after an explicit action and share the existing 40-attempt monthly cap. Reference facts are cached for 24 hours and listing searches for six hours. Only public property facts are cached; owner and contact fields are discarded. Results show asking prices and observation dates, explain matches, and warn when the page limit is reached. A missing API key, provider error and an empty completed search have separate UI states. Metro locations use regional centers; select a ZIP or full address for a neighborhood search. Historical rent intelligence currently covers four Bay Area cities; live rental matching can search elsewhere when the provider has coverage.
 
 ```bash
 curl http://127.0.0.1:8770/api/health

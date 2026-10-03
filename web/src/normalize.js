@@ -389,7 +389,8 @@ export function normalizeSales(payload) {
       beds: asNumber(s.beds),
       baths: asNumber(s.baths),
       sqft: asNumber(s.sqft),
-      fetched_at: asDateText(s.fetched_at),
+      fetched_at: asText(s.fetched_at),
+      record_origin: asText(s.record_origin),
     }))
     .filter((s) => s.event_id && s.lat != null && s.lon != null);
 }

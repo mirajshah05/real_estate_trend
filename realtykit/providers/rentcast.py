@@ -188,12 +188,12 @@ def fetch_bbox(
 
 
 def _iso_date(value: str | None) -> str | None:
-    if not value:
+    if not isinstance(value, str) or not value:
         return None
     try:
         return datetime.fromisoformat(value).date().isoformat()
     except ValueError:
-        return value[:10] if len(value) >= 10 else None
+        return None
 
 
 def _rental_date(value: object) -> str | None:
@@ -383,9 +383,10 @@ def fetch_sold_bbox(
     _validate_bbox(west, south, east, north)
     lat, lon, radius = _search_geometry(west, south, east, north)
     cache_key = _cache_key(
-        "recorded-sales",
+        "recorded-sales-v3",
         {
-            "bbox": [round(west, 3), round(south, 3), round(east, 3), round(north, 3)],
+            "bbox": [west, south, east, north],
+            "search_day": datetime.now(UTC).date().isoformat(),
             "days": lookback_days,
             "limit": limit,
         },
@@ -417,20 +418,37 @@ def fetch_sold_bbox(
             continue
         property_id = str(item.get("id") or i)
         history = item.get("history") if isinstance(item.get("history"), dict) else {}
-        events = list(history.values())
-        if not events and item.get("lastSaleDate"):
-            events = [
-                {
-                    "event": "Sale",
-                    "date": item.get("lastSaleDate"),
-                    "price": item.get("lastSalePrice"),
-                }
-            ]
+        events = [
+            {**event, "record_origin": "sale_history"}
+            for event in history.values()
+            if isinstance(event, dict)
+        ]
+        last_sale_date = _iso_date(item.get("lastSaleDate"))
+        if last_sale_date and not any(
+            isinstance(event, dict)
+            and str(event.get("event", "")).lower() == "sale"
+            and _iso_date(event.get("date")) == last_sale_date
+            for event in events
+        ):
+            events.extend(
+                [
+                    {
+                        "event": "Sale",
+                        "date": item.get("lastSaleDate"),
+                        "price": item.get("lastSalePrice"),
+                        "record_origin": "last_sale_fields",
+                    }
+                ]
+            )
         for event in events:
             if not isinstance(event, dict) or str(event.get("event", "")).lower() != "sale":
                 continue
             sale_date = _iso_date(event.get("date"))
-            if not sale_date or sale_date < cutoff:
+            if (
+                not sale_date
+                or sale_date < cutoff
+                or sale_date > datetime.now(UTC).date().isoformat()
+            ):
                 continue
             price = _number(event.get("price"))
             event_seed = f"{property_id}|{sale_date}|{price}"
@@ -456,6 +474,7 @@ def fetch_sold_bbox(
                     "baths": _number(item.get("bathrooms")),
                     "sqft": _number(item.get("squareFootage")),
                     "fetched_at": fetched,
+                    "record_origin": event["record_origin"],
                 }
             )
     sales.sort(key=lambda row: row["sale_date"], reverse=True)

@@ -11,9 +11,9 @@ const CARTO_TILE_URL =
   (CARTO_BASEMAP_KEY ? `?key=${encodeURIComponent(CARTO_BASEMAP_KEY)}` : "");
 
 const METRICS = [
-  { id: "price_change_yoy", label: "ZHVI YoY" },
-  { id: "price_change_mom", label: "ZHVI MoM" },
-  { id: "inventory_change", label: "Inventory Δ" },
+  { id: "price_change_yoy", label: "Home value · past year" },
+  { id: "price_change_mom", label: "Home value · past month" },
+  { id: "inventory_change", label: "Listings change" },
 ];
 
 function colorFor(value, maxAbs) {
@@ -23,7 +23,7 @@ function colorFor(value, maxAbs) {
     return t < -0.5 ? "#c44536" : "#8b5a4a";
   }
   if (t > 0.5) return "#4361ee";
-  if (t > 0.15) return "#3d5a80";
+  if (t > 0) return "#3d5a80";
   return "#6b6b80";
 }
 
@@ -33,7 +33,7 @@ function radiusFor(value, maxAbs) {
   return 5 + t * 14;
 }
 
-function FlyTo({ target }) {
+function FlyTo({ target, zoomRequest }) {
   const map = useMap();
   useEffect(() => {
     if (!target || target.lat == null || target.lon == null) return;
@@ -45,9 +45,12 @@ function FlyTo({ target }) {
           ? 10
           : target.kind === "city"
             ? 10
-            : 7;
+            : 10;
     map.flyTo([target.lat, target.lon], zoom, { duration: 0.55 });
   }, [target, map]);
+  useEffect(() => {
+    if (zoomRequest) map.setZoom(Math.max(map.getZoom(), 12));
+  }, [zoomRequest, map]);
   return null;
 }
 
@@ -83,6 +86,7 @@ export default function MapPanel({
   metric,
   onMetric,
   selected,
+  zoomRequest,
   marketLabel,
   onSelect,
   onBounds,
@@ -123,7 +127,7 @@ export default function MapPanel({
           subdomains="abcd"
         />
         <ZoomControl position="bottomleft" />
-        <FlyTo target={selected} />
+        <FlyTo target={selected} zoomRequest={zoomRequest} />
         <BoundsReporter onBounds={onBounds} />
 
         {governmentAreas.map((area) => (
@@ -270,7 +274,7 @@ export default function MapPanel({
             <>
               <strong>
                 {selected.name}
-                {selected.state ? `, ${selected.state}` : ""}
+                {selected.state && !selected.name.endsWith(`, ${selected.state}`) ? `, ${selected.state}` : ""}
               </strong>
               <span>
                 {metricLabel(metric)}
@@ -292,15 +296,13 @@ export default function MapPanel({
               </span>
             </>
           )}
-          {listings.length === 0 && (
-            <span> Zoom to level 10+ for address-level listing pins.</span>
-          )}
+          <span>Search a city or click a circle, then choose your next step.</span>
           {(listings.length > 0 || sales.length > 0) && (
             <span> {listings.length} active homes · {sales.length} recorded sales in this viewport.</span>
           )}
-          {selected && selected.kind === "city" && (
+          {selected && selected.geometry && selected.kind === "city" && (
             <span>
-              {" "}Official Santa Clara County boundary
+              {" "}Official {selected.county || "county"} boundary
               {selected.parcel_count != null
                 ? ` · ${selected.parcel_count.toLocaleString("en-US")} public parcel records`
                 : ""}
@@ -321,12 +323,13 @@ export default function MapPanel({
           <i style={{ background: "#4361ee" }} />
         </div>
         <div className="legend-labels">
-          <span>down</span>
-          <span>up</span>
+          <span>decrease</span>
+          <span>increase</span>
         </div>
         <div className="legend-labels">
-          <span>halo = market outlier</span>
+          <span>Larger circle = larger change</span>
         </div>
+        <div className="legend-labels"><span>{metric.startsWith("price") ? "Zillow typical-home estimate (ZHVI)" : "Change in available listings"}</span></div>
         {governmentAreas.length > 0 && (
           <div className="legend-labels">
             <span>teal outline = official city boundary</span>

@@ -13,7 +13,6 @@ const FIXTURE_MAP = {
   "/api/correlation": "/fixtures/correlation.json",
   "/api/outliers": "/fixtures/outliers.json",
   "/api/stocks/dips": "/fixtures/stocks-dips.json",
-  "/api/map/listings": "/fixtures/map-listings.json",
   "/api/health": "/fixtures/health.json",
 };
 
@@ -114,7 +113,7 @@ export async function getJson(path, { signal } = {}) {
   return readJson(res, path);
 }
 
-export async function postJson(path, body) {
+export async function postJson(path, body, { signal } = {}) {
   let res;
   try {
     res = await fetch(path, {
@@ -125,8 +124,10 @@ export async function postJson(path, body) {
       },
       cache: "no-store",
       body: JSON.stringify(body || {}),
+      signal,
     });
-  } catch {
+  } catch (error) {
+    if (error.name === "AbortError") throw error;
     throw new ApiError("API unreachable", {
       status: 0,
       code: "offline",

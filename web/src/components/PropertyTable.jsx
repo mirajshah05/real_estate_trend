@@ -1,4 +1,7 @@
-import { formatMoney } from "../normalize.js";
+import { PropertyRows } from "./PropertyRows.jsx";
+import PaginatedProperties from "./PaginatedProperties.jsx";
+import SalesEvidence from "./SalesEvidence.jsx";
+export { PropertyRows } from "./PropertyRows.jsx";
 
 export function Quota({ usage, cached }) {
   if (!usage) return null;
@@ -29,7 +32,7 @@ export function ListingsPanel({ listings, meta, metroNewListings, gallery, focus
   );
 }
 
-export function SalesPanel({ sales, state, onLoad, canLoad }) {
+export function SalesPanel({ sales, state, onLoad, canLoad, onZoom, areaLabel }) {
   return (
     <>
       <div className="panel-title-row">
@@ -38,55 +41,16 @@ export function SalesPanel({ sales, state, onLoad, canLoad }) {
           <p className="panel-caption">Visible map area · last 12 months · on demand to conserve the hard 40-attempt monthly budget.</p>
         </div>
         <button type="button" onClick={onLoad} disabled={!canLoad || state.loading}>
-          {state.loading ? "Loading…" : "Load sales"}
+          {state.loading ? "Searching…" : "Search recent sales"}
         </button>
       </div>
-      {!canLoad && <div className="inline-alert">Zoom to level 10 or closer before loading sales.</div>}
-      {state.error && <div className="inline-alert">{state.error.message}</div>}
+      {!canLoad && <div className="scope-note">Choose a city or zoom into a neighborhood to search a smaller area. <button type="button" onClick={onZoom}>Zoom into {areaLabel || "this area"}</button></div>}
+      {state.loading && <p role="status">Checking recorded sales in this map area. This may take up to 20 seconds.</p>}
+      {state.error && <div className="inline-alert" role="alert">{state.error.message}</div>}
       <Quota usage={state.usage} cached={state.cached} />
+      {state.loaded && !state.error && <SalesEvidence sales={sales} state={state} areaLabel={areaLabel} />}
       <p className="fine-print">Sale events come from property records, not assessments. County recording delays may be weeks or months; owner fields are discarded before storage.</p>
-      <PropertyRows rows={sales} dateKey="sale_date" empty="No sale events loaded yet." />
+      {!state.loading && !state.error && <PaginatedProperties rows={sales} kind="sales" dateKey="sale_date" empty={state.loaded ? "No sale events were returned for this area in the past year. Recording delays and provider coverage can leave gaps; this does not mean no homes sold. Try a nearby area or a tighter neighborhood view." : "Choose Search recent sales to check this map area."} />}
     </>
-  );
-}
-
-function PropertyRows({ rows, dateKey, empty, gallery = false, focusedListing, onFocus }) {
-  if (!rows || !rows.length) return <div className="empty compact">{empty}</div>;
-  return (
-    <div className={`property-list${gallery ? " property-gallery" : ""}`}>
-      {rows.map((row) => (
-        <article
-          key={row.listing_id || row.event_id}
-          className={`property-row${focusedListing && focusedListing.listing_id === row.listing_id ? " selected" : ""}`}
-          role={gallery && onFocus ? "button" : undefined}
-          aria-pressed={gallery && onFocus ? Boolean(focusedListing && focusedListing.listing_id === row.listing_id) : undefined}
-          tabIndex={gallery && onFocus ? 0 : undefined}
-          onClick={gallery && onFocus ? () => onFocus(row) : undefined}
-          onKeyDown={gallery && onFocus ? (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onFocus(row); } } : undefined}
-        >
-          {gallery && (
-            <div className="property-photo">
-              {row.photos && row.photos[0]
-                ? <img src={row.photos[0]} alt={`Exterior of ${row.address || "property"}`} loading="lazy" />
-                : <span aria-label="Property photo unavailable">Photo unavailable</span>}
-            </div>
-          )}
-          <div>
-            <strong>{row.address || "Address unavailable"}</strong>
-            <span>{[row.city, row.state, row.zip_code].filter(Boolean).join(", ")}</span>
-          </div>
-          <div className="property-numbers">
-            <strong>{formatMoney(row.price)}</strong>
-            <span>{row[dateKey] || "date unavailable"}</span>
-          </div>
-          <div className="property-facts">
-            {row.beds != null && <span>{row.beds} bd</span>}
-            {row.baths != null && <span>{row.baths} ba</span>}
-            {row.sqft != null && <span>{Math.round(row.sqft).toLocaleString("en-US")} ft²</span>}
-            {row.dom != null && <span title="Listing days on market">{Math.round(row.dom)} DOM</span>}
-          </div>
-        </article>
-      ))}
-    </div>
   );
 }

@@ -14,6 +14,7 @@ from realtykit.api.routes import (
     freshness,
     government,
     health,
+    homes,
     ingest,
     kpis,
     map,
@@ -49,6 +50,7 @@ app.add_middleware(
 )
 
 app.include_router(health.router, prefix="/api")
+app.include_router(homes.router, prefix="/api")
 app.include_router(freshness.router, prefix="/api")
 app.include_router(map.router, prefix="/api")
 app.include_router(government.router, prefix="/api")

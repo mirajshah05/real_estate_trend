@@ -5,17 +5,28 @@ export default function SearchBox({ cities, onSelect, selectedId }) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [remoteHits, setRemoteHits] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState(null);
 
   useEffect(() => {
     const query = q.trim();
     if (query.length < 3) {
       setRemoteHits([]);
+      setSearching(false);
+      setSearchError(null);
       return undefined;
     }
     let cancelled = false;
+    setRemoteHits([]);
+    setSearching(true);
+    setSearchError(null);
     const timer = setTimeout(async () => {
       const response = await getApiOrFixture(paths.search(query));
-      if (!cancelled && response.data) setRemoteHits(response.data.results || []);
+      if (!cancelled) {
+        setSearching(false);
+        setSearchError(response.error);
+        setRemoteHits(response.data?.results || []);
+      }
     }, 250);
     return () => {
       cancelled = true;
@@ -74,12 +85,13 @@ export default function SearchBox({ cities, onSelect, selectedId }) {
                 }}
               >
                 {c.label || c.name}
-                {!c.label && c.state ? `, ${c.state}` : ""}
+                {!c.label && c.state && !c.name.endsWith(`, ${c.state}`) ? `, ${c.state}` : ""}
               </button>
             </li>
           ))}
         </ul>
       )}
+      {open && q.trim().length >= 3 && hits.length === 0 && <div className="search-message" role="status">{searching ? "Searching locations…" : searchError ? "Location search is unavailable. Try again." : "No matching location. Try a city with its state, a ZIP, or a full street address."}</div>}
     </div>
   );
 }

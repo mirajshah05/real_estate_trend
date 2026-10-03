@@ -48,6 +48,7 @@ class SaleEvent(BaseModel):
     baths: float | None = None
     sqft: float | None = None
     fetched_at: str
+    record_origin: str | None = None
 
 
 def validate_listing(payload: dict) -> Listing:

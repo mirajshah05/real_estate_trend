@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from pathlib import Path
 
 from realtykit.providers import rentcast
@@ -61,6 +62,35 @@ def test_sale_history_discards_owner_and_assessment_data(monkeypatch, tmp_path: 
     assert cached is False
     assert rows[0]["price"] == 1800000
     assert rows[0]["sale_date"] == "2026-07-01"
+    assert rows[0]["record_origin"] == "sale_history"
     assert "owner" not in rows[0]
     assert "taxAssessments" not in rows[0]
     assert cached_payload["rows"] == rows
+
+
+def test_last_sale_is_used_when_history_contains_only_other_events(monkeypatch, tmp_path):
+    today = datetime.now(UTC).date().isoformat()
+    payload = [
+        {
+            "id": "history-gap",
+            "latitude": 37.38,
+            "longitude": -122.02,
+            "lastSaleDate": today,
+            "lastSalePrice": 123456,
+            "history": {"listed": {"event": "Sale Listing", "date": today}},
+        }
+    ]
+    monkeypatch.setattr(rentcast, "get_cached", lambda *_: None)
+    monkeypatch.setattr(rentcast, "put_cached", lambda *_: None)
+    monkeypatch.setattr(rentcast, "_request", lambda *_: FakeResponse(payload))
+    rows, _ = rentcast.fetch_sold_bbox(
+        west=-122.1, south=37.3, east=-121.9, north=37.5, settings=_settings(tmp_path)
+    )
+    assert len(rows) == 1 and rows[0]["price"] == 123456
+    assert rows[0]["record_origin"] == "last_sale_fields"
+    payload[0]["history"]["sale"] = {"event": "Sale", "date": today, "price": 123456}
+    rows, _ = rentcast.fetch_sold_bbox(
+        west=-122.1, south=37.3, east=-121.9, north=37.5, settings=_settings(tmp_path)
+    )
+    assert len(rows) == 1
+    assert rentcast._iso_date("not-a-date-at-all") is None

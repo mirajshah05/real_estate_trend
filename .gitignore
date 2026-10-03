@@ -51,6 +51,7 @@ data/*.sqlite-*
 *.sqlite3
 *.sqlite3-*
 data/geo/
+data/research/
 
 # Frontend
 web/node_modules/

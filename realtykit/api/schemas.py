@@ -112,6 +112,10 @@ class MapSalesResponse(ForbidModel):
     usage: ProviderUsage | None = None
     cached: bool = False
     lookback_days: int = 365
+    query_bounds: list[float] = Field(default_factory=list)
+    record_limit: int = 200
+    date_from: str | None = None
+    date_to: str | None = None
     note: str = ""
 
 
