@@ -66,12 +66,15 @@ app.include_router(research.router, prefix="/api")
 
 @app.exception_handler(RequestValidationError)
 async def _validation(request: Request, exc: RequestValidationError) -> JSONResponse:
+    # Do not include submitted values, which may contain private imported data.
+    errors = exc.errors()
+    unknown_metric = any("metric" in error.get("loc", ()) for error in errors)
     return JSONResponse(
         status_code=422,
         content={
             "error": {
-                "code": "unknown_metric" if "metric" in str(exc) else "invalid_request",
-                "message": str(exc),
+                "code": "unknown_metric" if unknown_metric else "invalid_request",
+                "message": "Unsupported metric." if unknown_metric else "Invalid request.",
             }
         },
     )

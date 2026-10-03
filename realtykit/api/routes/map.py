@@ -404,14 +404,14 @@ def map_listings(
         except ValueError as exc:
             raise HTTPException(
                 status_code=502,
-                detail={"code": "listing_payload_invalid", "message": str(exc)},
+                detail={"code": "listing_payload_invalid", "message": "Invalid listing payload."},
             ) from exc
         except Exception as exc:
             raise HTTPException(
                 status_code=502,
                 detail={
                     "code": "provider_unavailable",
-                    "message": f"RentCast request failed: {exc}",
+                    "message": "RentCast request failed. Check provider availability.",
                 },
             ) from exc
     return MapListingsResponse(
@@ -487,14 +487,14 @@ def map_sales(
         except ValueError as exc:
             raise HTTPException(
                 status_code=502,
-                detail={"code": "sale_payload_invalid", "message": str(exc)},
+                detail={"code": "sale_payload_invalid", "message": "Invalid sale payload."},
             ) from exc
         except Exception as exc:
             raise HTTPException(
                 status_code=502,
                 detail={
                     "code": "provider_unavailable",
-                    "message": f"RentCast request failed: {exc}",
+                    "message": "RentCast request failed. Check provider availability.",
                 },
             ) from exc
     return MapSalesResponse(

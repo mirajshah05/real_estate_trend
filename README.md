@@ -12,6 +12,17 @@ The project has two processes:
 
 ![RealtyKit dashboard showing Sunnyvale boundary and San Jose metro trends](docs/assets/realtykit-dashboard.png)
 
+## Watch the app in action
+
+[![Animated preview of the RealtyKit Palo Alto walkthrough](docs/assets/realtykit-walkthrough-preview.gif)](https://github.com/mirajshah05/real_estate_trend/raw/refs/heads/main/docs/assets/realtykit-walkthrough.mp4)
+
+[Watch or download the short walkthrough (MP4)](https://github.com/mirajshah05/real_estate_trend/raw/refs/heads/main/docs/assets/realtykit-walkthrough.mp4).
+It shows the dashboard, searching for Palo Alto, its official city boundary,
+housing trends, stock overlays, research details, and source freshness.
+The recording uses cached observations and keeps their dates and stale-data
+warnings visible. Palo Alto's boundary is local; the housing market figures
+shown are San Jose metro aggregates.
+
 RealtyKit does not scrape listing-site HTML. Compass remains unavailable until
 a licensed API or MLS/RESO feed is configured. Zillow and Redfin integrations
 use their public research datasets rather than consumer-page scraping.
@@ -59,7 +70,7 @@ integration boundary are documented in
 ## Prerequisites
 
 - Python 3.11 or newer.
-- Node.js 18 or newer. The locked Vite 5 release accepts Node 18 or 20+.
+- Node.js 18 or newer. The locked Vite 6 release accepts Node 18 or 20+.
 - npm.
 - Internet access for live provider refreshes and map tiles.
 - macOS, Linux, or a comparable Unix shell for the commands below.
@@ -533,6 +544,8 @@ for `web/.env`.
   advice.
 
 The security review and residual risks are recorded in
+[`docs/security-audit-2026-10-02.md`](docs/security-audit-2026-10-02.md), with
+the previous review preserved in
 [`docs/security-audit-2026-09-02.md`](docs/security-audit-2026-09-02.md).
 
 Historical government-data research and the sale-event connector roadmap are
