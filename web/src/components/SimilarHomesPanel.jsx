@@ -4,12 +4,17 @@ import { referenceFilters, roomBounds } from "../propertyResults.js";
 import SearchBox from "./SearchBox.jsx";
 import { Quota } from "./PropertyTable.jsx";
 import PaginatedProperties from "./PaginatedProperties.jsx";
+import { LoadingShip } from "./ThemeScene.jsx";
+import { useTheme } from "../ThemeProvider.jsx";
 
 const TYPES = ["Single Family", "Condo", "Townhouse", "Apartment", "Multi-Family", "Manufactured", "Land"];
 const NUMBERS = [["min_price", "Minimum price ($)"], ["max_price", "Maximum price ($)"],
   ["min_sqft", "Minimum size (ft²)"], ["max_sqft", "Maximum size (ft²)"]];
 
 export default function SimilarHomesPanel({ selected, cities }) {
+  const { motion } = useTheme();
+  const motionRef = useRef(motion);
+  motionRef.current = motion;
   const [mode, setMode] = useState("requirements");
   const [area, setArea] = useState(selected?.geo_id !== "nation:US" ? selected : null);
   const [address, setAddress] = useState("");
@@ -21,7 +26,7 @@ export default function SimilarHomesPanel({ selected, cities }) {
   const generation = useRef(0);
   const resultsTop = useRef(null);
   useEffect(() => {
-    if (state.result) resultsTop.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    if (state.result) resultsTop.current?.scrollIntoView({ block: "start", behavior: motionRef.current ? "smooth" : "instant" });
   }, [state.result]);
   useEffect(() => {
     const abort = new AbortController();
@@ -132,7 +137,7 @@ export default function SimilarHomesPanel({ selected, cities }) {
       </div>
       <p className="fine-print">Each uncached lookup or search uses one RentCast request. Searches reuse a six-hour cache. Listing coverage and availability vary by area.</p>
       <Quota usage={status?.usage} cached={state.result?.cached} />
-      {state.loading && <p role="status">Checking RentCast. This can take up to 20 seconds.</p>}
+      {state.loading && <p role="status"><LoadingShip />Checking RentCast. This can take up to 20 seconds.</p>}
       {state.error && <div className="inline-alert" role="alert">{state.error.message}</div>}
       {state.result && <div aria-live="polite" ref={resultsTop} className="home-results">
         <h3>{state.result.listings.length} matching {filters.intent === "rent" ? "rentals" : "homes for sale"} in this sample</h3>

@@ -313,6 +313,19 @@ Typical statuses are:
 
 ## Using the dashboard
 
+### Appearance
+
+Use **Appearance** in the header to switch between Original dark, Star Wars,
+Harry Potter, Simpsons, and 90s Internet. Themes style the dashboard,
+map tiles, charts, forms, and tables without clearing your current research.
+
+Harry Potter includes a castle, floating candles, an owl, and four house
+palettes. Star Wars includes a starfield and a choice of Millennium Falcon,
+X-wing, or Podracer, with a racer shown while requests load. Atmosphere and
+ambient motion can be disabled independently; system reduced-motion settings
+pause animation automatically. Preferences are saved in this browser, with
+**Reset** available to restore the original appearance.
+
 ### Search and map
 
 Use the search field for:

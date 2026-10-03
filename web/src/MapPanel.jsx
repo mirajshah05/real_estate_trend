@@ -1,31 +1,19 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { CircleMarker, GeoJSON, MapContainer, TileLayer, Tooltip, ZoomControl, useMap } from "react-leaflet";
 import SearchBox from "./components/SearchBox.jsx";
 import { cityMetric } from "./normalize.js";
+import { useTheme } from "./ThemeProvider.jsx";
+import { marketColor, tileUrl } from "./themes.js";
 
 const US_CENTER = [39.8, -98.5];
 const US_ZOOM = 4;
 const CARTO_BASEMAP_KEY = (import.meta.env.VITE_CARTO_BASEMAP_KEY || "").trim();
-const CARTO_TILE_URL =
-  `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png` +
-  (CARTO_BASEMAP_KEY ? `?key=${encodeURIComponent(CARTO_BASEMAP_KEY)}` : "");
 
 const METRICS = [
   { id: "price_change_yoy", label: "Home value · past year" },
   { id: "price_change_mom", label: "Home value · past month" },
   { id: "inventory_change", label: "Listings change" },
 ];
-
-function colorFor(value, maxAbs) {
-  if (value == null || !maxAbs) return "#6b6b80";
-  const t = Math.max(-1, Math.min(1, value / maxAbs));
-  if (t < 0) {
-    return t < -0.5 ? "#c44536" : "#8b5a4a";
-  }
-  if (t > 0.5) return "#4361ee";
-  if (t > 0) return "#3d5a80";
-  return "#6b6b80";
-}
 
 function radiusFor(value, maxAbs) {
   if (value == null || !maxAbs) return 5;
@@ -35,6 +23,9 @@ function radiusFor(value, maxAbs) {
 
 function FlyTo({ target, zoomRequest }) {
   const map = useMap();
+  const { motion } = useTheme();
+  const motionRef = useRef(motion);
+  motionRef.current = motion;
   useEffect(() => {
     if (!target || target.lat == null || target.lon == null) return;
     const zoom = target.geo_id && /nation|united states/i.test(`${target.geo_id} ${target.name}`)
@@ -46,7 +37,7 @@ function FlyTo({ target, zoomRequest }) {
           : target.kind === "city"
             ? 10
             : 10;
-    map.flyTo([target.lat, target.lon], zoom, { duration: 0.55 });
+    map.flyTo([target.lat, target.lon], zoom, { duration: 0.55, animate: motionRef.current });
   }, [target, map]);
   useEffect(() => {
     if (zoomRequest) map.setZoom(Math.max(map.getZoom(), 12));
@@ -95,6 +86,8 @@ export default function MapPanel({
   focusedListing,
   onFocusListing,
 }) {
+  const { theme } = useTheme();
+  const colors = theme.tokens;
   const values = useMemo(
     () => cities.map((c) => cityMetric(c, metric)).filter((v) => v != null),
     [cities, metric]
@@ -123,7 +116,7 @@ export default function MapPanel({
         preferCanvas
       >
         <TileLayer
-          url={CARTO_TILE_URL}
+          url={tileUrl(theme, CARTO_BASEMAP_KEY)}
           subdomains="abcd"
         />
         <ZoomControl position="bottomleft" />
@@ -139,9 +132,9 @@ export default function MapPanel({
               geometry: area.geometry,
             }}
             style={{
-              color: selected && selected.name === area.name ? "#ffffff" : "#49c6b3",
+              color: selected && selected.name === area.name ? colors.selected : colors.boundary,
               weight: selected && selected.name === area.name ? 3 : 1.5,
-              fillColor: "#49c6b3",
+              fillColor: colors.boundary,
               fillOpacity: 0.1,
             }}
             eventHandlers={{ click: () => onSelect(area) }}
@@ -166,9 +159,9 @@ export default function MapPanel({
               center={[c.lat, c.lon]}
               radius={radiusFor(v, maxAbs) + (selectedHere ? 2 : 0)}
               pathOptions={{
-                color: outlier ? "#e9c46a" : selectedHere ? "#ffffff" : colorFor(v, maxAbs),
+                color: outlier ? colors.halo : selectedHere ? colors.selected : marketColor(v, maxAbs, colors),
                 weight: outlier || selectedHere ? 2 : 1,
-                fillColor: colorFor(v, maxAbs),
+                fillColor: marketColor(v, maxAbs, colors),
                 fillOpacity: 0.72,
               }}
               eventHandlers={{
@@ -192,7 +185,7 @@ export default function MapPanel({
             key={z.geo_id}
             center={[z.lat, z.lon]}
             radius={4}
-            pathOptions={{ color: "#9aa8ff", weight: 1, fillColor: "#4361ee", fillOpacity: 0.45 }}
+            pathOptions={{ color: colors.positive, weight: 1, fillColor: colors.positive, fillOpacity: 0.45 }}
           >
             <Tooltip className="rk-tip" direction="top" offset={[0, -3]}>
               <div>{z.name}{z.inventory != null ? ` · ${z.inventory.toLocaleString("en-US")} homes` : ""}</div>
@@ -207,10 +200,10 @@ export default function MapPanel({
             radius={l.outlier_score != null && l.outlier_score >= 3 ? 6 : 4}
             pathOptions={{
               color: focusedListing && focusedListing.listing_id === l.listing_id
-                ? "#ffffff"
-                : l.outlier_score != null && l.outlier_score >= 3 ? "#e9c46a" : "#e8e8f0",
+                ? colors.selected
+                : l.outlier_score != null && l.outlier_score >= 3 ? colors.halo : colors.listing,
               weight: focusedListing && focusedListing.listing_id === l.listing_id ? 3 : 1,
-              fillColor: "#e8e8f0",
+              fillColor: colors.listing,
               fillOpacity: 0.85,
             }}
             eventHandlers={{ click: () => onFocusListing && onFocusListing(l) }}
@@ -230,7 +223,7 @@ export default function MapPanel({
             key={sale.event_id}
             center={[sale.lat, sale.lon]}
             radius={5}
-            pathOptions={{ color: "#49c6b3", weight: 1.5, fillColor: "#49c6b3", fillOpacity: 0.8 }}
+            pathOptions={{ color: colors.boundary, weight: 1.5, fillColor: colors.boundary, fillOpacity: 0.8 }}
           >
             <Tooltip className="rk-tip" direction="top">
               <div>
@@ -316,11 +309,7 @@ export default function MapPanel({
       <div className="map-overlay legend">
         <div>{metricLabel(metric)}</div>
         <div className="legend-bar">
-          <i style={{ background: "#c44536" }} />
-          <i style={{ background: "#8b5a4a" }} />
-          <i style={{ background: "#6b6b80" }} />
-          <i style={{ background: "#3d5a80" }} />
-          <i style={{ background: "#4361ee" }} />
+          {[colors.negative, colors["negative-soft"], colors.neutral, colors["positive-soft"], colors.positive].map(color => <i key={color} style={{ background: color }} />)}
         </div>
         <div className="legend-labels">
           <span>decrease</span>
@@ -332,7 +321,7 @@ export default function MapPanel({
         <div className="legend-labels"><span>{metric.startsWith("price") ? "Zillow typical-home estimate (ZHVI)" : "Change in available listings"}</span></div>
         {governmentAreas.length > 0 && (
           <div className="legend-labels">
-            <span>teal outline = official city boundary</span>
+            <span>Outline = official city boundary</span>
           </div>
         )}
       </div>

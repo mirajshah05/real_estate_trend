@@ -58,7 +58,7 @@ button {
 
 button:hover:not(:disabled) {
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 button:disabled {
@@ -69,7 +69,7 @@ button:disabled {
 button.active {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .shell {
@@ -184,7 +184,7 @@ button.chip {
 .map-pane .leaflet-container {
   height: 100%;
   width: 100%;
-  background: #0b0b14;
+  background: var(--map-bg);
   font-family: var(--font);
 }
 
@@ -498,7 +498,7 @@ button.chip {
 }
 
 .scope-bar strong {
-  color: #9aa8ff;
+  color: var(--link);
   font-size: 9px;
   letter-spacing: 0.08em;
 }
@@ -692,7 +692,7 @@ button.chip {
 }
 
 .table tr.selected td {
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .reasons {
@@ -928,7 +928,7 @@ button.chip {
 
 .eyebrow {
   margin: 0 0 3px;
-  color: #9aa8ff;
+  color: var(--link);
   font-size: 9px;
   font-weight: 650;
   letter-spacing: 0.12em;
@@ -1150,7 +1150,7 @@ button.chip {
 .primary-button {
   border-color: var(--accent);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   padding: 7px 12px;
 }
 
@@ -1212,7 +1212,7 @@ button.chip {
   max-width: 760px;
   min-height: 180px;
   margin: 14px 0 10px;
-  border: 1px dashed #596bc0;
+  border: 1px dashed var(--accent);
   background: color-mix(in srgb, var(--accent) 5%, var(--bg));
   color: var(--muted);
 }
@@ -1235,7 +1235,7 @@ button.chip {
   height: 34px;
   border: 1px solid var(--line);
   border-radius: 50%;
-  color: #9aa8ff;
+  color: var(--link);
   font-size: 19px;
 }
 
@@ -1301,12 +1301,12 @@ summary { cursor: pointer; }
 .more-tools { flex: 0 0 auto; padding: 7px 12px; border-bottom: 1px solid var(--line); font-size: 11px; color: var(--muted); }
 .more-tools .dock-tabs { margin-top: 8px; border: 0; padding: 0; }
 .task-landing h2 { font-size: 24px; margin: 4px 0 10px; line-height: 1.2; }
-.eyebrow { color: #9aa8ff; text-transform: uppercase; letter-spacing: .08em; font-size: 10px; }
+.eyebrow { color: var(--link); text-transform: uppercase; letter-spacing: .08em; font-size: 10px; }
 .task-cards { display: grid; gap: 10px; margin: 18px 0; }
 .task-card { text-align: left; padding: 15px; border-radius: 8px; background: var(--bg); }
 .task-card strong { display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 6px; }
-.task-card > span { display: block; color: #aaaabe; line-height: 1.5; font-size: 12px; }
-.task-card:hover { background: #1d2341; }
+.task-card > span { display: block; color: var(--muted); line-height: 1.5; font-size: 12px; }
+.task-card:hover { background: var(--panel); }
 .home-search { max-width: 1000px; margin: 0 auto; }
 .home-search h2 { font-size: 25px; margin-bottom: 8px; }
 .home-search .subtabs { margin: 18px 0; }
@@ -1314,21 +1314,21 @@ summary { cursor: pointer; }
 .home-search input, .home-search select { padding: 9px; width: 100%; min-width: 0; }
 .home-area { position: relative; max-width: 600px; }
 .home-area > label { display: block; margin-bottom: 6px; color: var(--muted); }
-.home-area > p { color: #b7b8d3; }
+.home-area > p { color: var(--muted); }
 .home-area .search-box { position: relative; overflow: visible; }
 .home-area .search-box ul { position: absolute; top: 100%; left: 0; right: 0; z-index: 20; background: var(--panel); border: 1px solid var(--line); }
 .search-message { padding: 10px; font-size: 11px; color: var(--muted); background: var(--panel); }
 .home-address { max-width: 700px; }
 .home-address button { margin-top: 10px; padding: 8px 14px; }
 .primary-action { background: var(--accent); padding: 10px 18px; border-radius: 5px; border-color: var(--accent); font-weight: 600; }
-.match-reasons { grid-column: 1 / -1; margin: 3px 0; color: #8ed4bc; font-size: 11px; }
+.match-reasons { grid-column: 1 / -1; margin: 3px 0; color: var(--live); font-size: 11px; }
 .reference-summary, .matching-summary { border: 1px solid var(--line); background: var(--bg); border-radius: 6px; padding: 12px 14px; margin: 14px 0; }
 .reference-summary p, .matching-summary p { margin: 7px 0 0; }
 .reference-summary > strong { display: block; }
 .reference-summary .eyebrow { display: block; margin-bottom: 6px; }
-.reference-correction { color: #9be0c5; border-left: 2px solid var(--live); padding-left: 10px; }
+.reference-correction { color: var(--live); border-left: 2px solid var(--live); padding-left: 10px; }
 .home-results { scroll-margin-top: 12px; }
-.results-criteria { color: #c0c8ea; font-size: 12px; }
+.results-criteria { color: var(--text); font-size: 12px; }
 .room-filter { margin: 0; padding: 0; border: 0; min-width: 0; display: flex; gap: 5px; }
 .room-filter legend { color: var(--muted); font-size: 10px; margin-bottom: 5px; }
 .room-filter input { flex: 1; width: 40%; }
@@ -1341,17 +1341,17 @@ summary { cursor: pointer; }
 .property-pagination button { padding: 7px 12px; border-radius: 4px; }
 .property-pagination label { white-space: nowrap; color: var(--muted); }
 .paginated-properties { scroll-margin-top: 10px; }
-.sales-evidence { background: var(--bg); border: 1px solid #3d5a80; border-radius: 6px; padding: 14px; margin: 15px 0; font-size: 12px; }
+.sales-evidence { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 14px; margin: 15px 0; font-size: 12px; }
 .evidence-heading { display: flex; flex-direction: column; gap: 4px; }
-.evidence-heading strong { color: #9be0c5; font-size: 16px; }
-.evidence-heading > span { color: #a7b8ec; }
+.evidence-heading strong { color: var(--live); font-size: 16px; }
+.evidence-heading > span { color: var(--link); }
 .evidence-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
 .evidence-grid dt { color: var(--muted); font-size: 10px; }
 .evidence-grid dd { margin: 4px 0 0; }
-.evidence-cities { color: #b8bdd1; }
+.evidence-cities { color: var(--muted); }
 .sales-evidence details { border-top: 1px solid var(--line); padding-top: 10px; }
-.sales-evidence a { color: #9aa8ff; }
-.sale-record-source { grid-column: 1 / -1; color: #a7b8ec; font-size: 10px; }
+.sales-evidence a { color: var(--link); }
+.sale-record-source { grid-column: 1 / -1; color: var(--link); font-size: 10px; }
 .record-details { margin-top: 7px; color: var(--muted); }
 .record-details dl { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 6px 10px; }
 .record-details dd { margin: 0; overflow-wrap: anywhere; color: var(--text); }

@@ -195,10 +195,10 @@ function firstUsableSeries(series, keys) {
   return null;
 }
 
-export function buildOverlayModel(series = {}) {
+export function buildOverlayModel(series = {}, colors = {}) {
   let definitions = OVERLAY_DEFINITIONS.map((definition) => {
     const points = firstUsableSeries(series, definition.seriesKeys);
-    return points ? { ...definition, points } : null;
+    return points ? { ...definition, color: colors[definition.key] || definition.color, points } : null;
   }).filter(Boolean);
   if (!definitions.length) return { definitions: [], rows: [], rawByKey: {}, from: null, to: null };
 

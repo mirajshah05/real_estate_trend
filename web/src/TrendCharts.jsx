@@ -10,10 +10,7 @@ import {
 } from "recharts";
 import { mergeSeries, summarizeSeries } from "./normalize.js";
 import { buildOverlayModel } from "./chartModels.js";
-
-const AXIS = { stroke: "#8b8ba0", fontSize: 11 };
-const GRID = { stroke: "#2a2a40" };
-const TIP = { background: "#16162a", border: "1px solid #2a2a40" };
+import { useTheme } from "./ThemeProvider.jsx";
 
 function formatDate(value, options = { month: "short", year: "numeric" }) {
   if (!value) return "—";
@@ -73,7 +70,7 @@ function OverlayExplanation({ definitions, from, to }) {
       <div className="overlay-guide">
         <strong>Compare direction and timing—not dollar amounts.</strong>
         <span>Each line is independently scaled: 0 is that series’ low and 100 is its high during the shared {formatDate(from)}–{formatDate(to)} window.</span>
-        <span>Example: blue at 80 means home values are 80% of the way from their period low to high. White at 80 means the same relative position for stocks; it does not mean the two values are equal.</span>
+        <span>Example: home values at 80 means they are 80% of the way from their period low to high. Stocks at 80 means the same relative position for stocks; it does not mean the two values are equal.</span>
       </div>
       <div className="overlay-series-grid">
         {definitions.map((definition) => {
@@ -114,6 +111,7 @@ function ChartFrame({ children }) {
 }
 
 export function HousingTrendChart({ series }) {
+  const { palette, theme } = useTheme();
   const inventory = series.inventory || [];
   const dom = series.days_on_market || series.median_dom || series.dom || [];
   const listings = series.new_listings || [];
@@ -131,18 +129,19 @@ export function HousingTrendChart({ series }) {
     <ChartFrame>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={rows} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
-          <CartesianGrid {...GRID} vertical={false} />
-          <XAxis dataKey="t" tick={AXIS} minTickGap={28} />
-          <YAxis yAxisId="left" tick={AXIS} width={44} />
-          <YAxis yAxisId="right" orientation="right" tick={AXIS} width={36} />
-          <Tooltip contentStyle={TIP} />
-          <Legend wrapperStyle={{ fontSize: 11, color: "#8b8ba0" }} />
+          <CartesianGrid {...palette.grid} vertical={false} />
+          <XAxis dataKey="t" tick={palette.axis} minTickGap={28} />
+          <YAxis yAxisId="left" tick={palette.axis} width={44} />
+          <YAxis yAxisId="right" orientation="right" tick={palette.axis} width={36} />
+          <Tooltip contentStyle={palette.tip} />
+          <Legend wrapperStyle={{ fontSize: 11, color: theme.tokens.text }} />
           <Line
             yAxisId="left"
             type="monotone"
             dataKey="inventory"
             name="Inventory"
-            stroke="#4361ee"
+            stroke={palette.housing}
+            isAnimationActive={false}
             dot={false}
             strokeWidth={1.6}
             connectNulls
@@ -152,7 +151,8 @@ export function HousingTrendChart({ series }) {
             type="monotone"
             dataKey="listings"
             name="New listings"
-            stroke="#e8e8f0"
+            stroke={palette.gspc}
+            isAnimationActive={false}
             dot={false}
             strokeWidth={1.4}
             connectNulls
@@ -162,7 +162,8 @@ export function HousingTrendChart({ series }) {
             type="monotone"
             dataKey="dom"
             name="DOM"
-            stroke="#c9a227"
+            stroke={palette.mortgage}
+            isAnimationActive={false}
             dot={false}
             strokeWidth={1.4}
             connectNulls
@@ -174,7 +175,8 @@ export function HousingTrendChart({ series }) {
 }
 
 export function OverlayChart({ series }) {
-  const { definitions, rows, rawByKey, from, to } = buildOverlayModel(series || {});
+  const { palette, theme } = useTheme();
+  const { definitions, rows, rawByKey, from, to } = buildOverlayModel(series || {}, palette);
 
   if (!rows.length) {
     return null;
@@ -185,18 +187,18 @@ export function OverlayChart({ series }) {
       <ChartFrame>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <CartesianGrid {...GRID} vertical={false} />
-            <XAxis dataKey="t" tick={AXIS} minTickGap={28} />
+            <CartesianGrid {...palette.grid} vertical={false} />
+            <XAxis dataKey="t" tick={palette.axis} minTickGap={28} />
             <YAxis
-              tick={AXIS}
+              tick={palette.axis}
               ticks={[0, 0.5, 1]}
               domain={[0, 1]}
               width={36}
               tickFormatter={(value) => Math.round(value * 100)}
-              label={{ value: "Own range", angle: -90, position: "insideLeft", fill: "#8b8ba0", fontSize: 9 }}
+              label={{ value: "Own range", angle: -90, position: "insideLeft", fill: theme.tokens.muted, fontSize: 11 }}
             />
             <Tooltip content={<OverlayTooltip rawByKey={rawByKey} />} />
-            <Legend wrapperStyle={{ fontSize: 11, color: "#8b8ba0" }} />
+            <Legend wrapperStyle={{ fontSize: 11, color: theme.tokens.text }} />
             {definitions.map((definition) => (
               <Line
                 key={definition.key}
@@ -204,6 +206,7 @@ export function OverlayChart({ series }) {
                 dataKey={definition.key}
                 name={definition.label}
                 stroke={definition.color}
+                isAnimationActive={false}
                 dot={false}
                 strokeWidth={definition.key === "housing" ? 2.4 : 1.8}
                 connectNulls

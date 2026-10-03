@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { propertyPage } from "../propertyResults.js";
 import { PropertyRows } from "./PropertyRows.jsx";
+import { useTheme } from "../ThemeProvider.jsx";
 
 export default function PaginatedProperties({ rows, dateKey, empty, kind = "homes" }) {
+  const { motion } = useTheme();
   const [sort, setSort] = useState(kind === "sales" ? "recent" : "nearest");
   const [page, setPage] = useState(1);
   const top = useRef(null);
@@ -11,7 +13,7 @@ export default function PaginatedProperties({ rows, dateKey, empty, kind = "home
   const noun = kind === "sales" ? "sale events" : "homes";
   function changePage(next) {
     setPage(next);
-    top.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    top.current?.scrollIntoView({ block: "start", behavior: motion ? "smooth" : "instant" });
   }
   function pager(position) {
     if (result.pages <= 1) return null;

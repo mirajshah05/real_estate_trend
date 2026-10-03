@@ -22,12 +22,11 @@ import {
 } from "../chartModels.js";
 import { Quota } from "./PropertyTable.jsx";
 import { EmptyState, ErrorState, LoadingState } from "./StatusState.jsx";
+import { useTheme } from "../ThemeProvider.jsx";
 
 const CITIES = ["San Jose", "Sunnyvale", "Mountain View", "Palo Alto"];
 const TYPES = ["All", "Apartment", "Townhouse", "Single Family"];
 const STATUSES = ["All", "New", "Existing"];
-const BED_COLORS = { 1: "#49c6b3", 2: "#9aa8ff", 3: "#e9c46a" };
-const AXIS = { stroke: "#8b8ba0", fontSize: 11 };
 
 export default function RentalsPanel({
   city,
@@ -110,6 +109,7 @@ export default function RentalsPanel({
 }
 
 function RentalTrends({ city, months, trends, state, onRetry }) {
+  const { palette } = useTheme();
   const [propertyType, setPropertyType] = useState("All");
   const [listingStatus, setListingStatus] = useState("All");
   const rows = trends && trends.rows ? trends.rows : [];
@@ -138,15 +138,14 @@ function RentalTrends({ city, months, trends, state, onRetry }) {
       </div>
     );
   }
-  if (!hasChartValues && !marketIndex) return <EmptyState>No rental observations are cached for {city} yet. Import a CSV or JSON dataset to begin.</EmptyState>;
+  if (!rows.length && !marketIndex) return <EmptyState>No rental observations are cached for {city} yet. Import a CSV or JSON dataset to begin.</EmptyState>;
 
   const latest = [...chartRows].reverse().find((row) => [1, 2, 3].some((bed) => row[`bed${bed}`] != null));
   return (
     <section className="rental-trends" aria-label={`${city} rental trends`}>
       <Quota usage={trends.rentcast_usage} cached={false} />
       {marketIndex && <MarketIndexChart city={city} months={months} index={marketIndex} />}
-      {hasChartValues ? (
-        <>
+      {rows.length > 0 && (
           <div className="panel-title-row">
             <div>
               <h3 id="rental-trends-title">{showingAverage ? "Average" : "Median"} asking rent by bedrooms</h3>
@@ -167,6 +166,9 @@ function RentalTrends({ city, months, trends, state, onRetry }) {
               </label>
             </div>
           </div>
+      )}
+      {hasChartValues ? (
+        <>
           <div className="rent-kpis" aria-label={`Latest ${showingAverage ? "average" : "median"} asking rents`}>
             {[1, 2, 3].map((bed) => (
               <div className="rent-kpi" key={bed}>
@@ -179,13 +181,13 @@ function RentalTrends({ city, months, trends, state, onRetry }) {
           <div className="rental-chart" role="img" aria-label={`${months}-month rental price history for ${city}`}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartRows} margin={{ top: 12, right: 12, left: 8, bottom: 0 }}>
-                <CartesianGrid stroke="#2a2a40" vertical={false} />
-                <XAxis dataKey="month" tick={AXIS} minTickGap={24} />
-                <YAxis tick={AXIS} width={62} domain={bedroomDomain} tickFormatter={(value) => `$${Math.round(value / 100) / 10}k`} />
-                <Tooltip formatter={(value) => formatMoney(value)} contentStyle={{ background: "#16162a", border: "1px solid #2a2a40" }} />
+                <CartesianGrid {...palette.grid} vertical={false} />
+                <XAxis dataKey="month" tick={palette.axis} minTickGap={24} />
+                <YAxis tick={palette.axis} width={62} domain={bedroomDomain} tickFormatter={(value) => `$${Math.round(value / 100) / 10}k`} />
+                <Tooltip formatter={(value) => formatMoney(value)} contentStyle={palette.tip} />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
                 {[1, 2, 3].map((bed) => (
-                  <Line key={bed} type="monotone" dataKey={`bed${bed}`} name={`${bed} bedroom`} stroke={BED_COLORS[bed]} strokeWidth={2} dot={{ r: pointRadius }} connectNulls={false} />
+                  <Line key={bed} type="monotone" dataKey={`bed${bed}`} name={`${bed} bedroom`} stroke={palette.bedrooms[bed]} isAnimationActive={false} strokeWidth={2} dot={{ r: pointRadius }} connectNulls={false} />
                 ))}
               </LineChart>
             </ResponsiveContainer>
@@ -195,7 +197,7 @@ function RentalTrends({ city, months, trends, state, onRetry }) {
           <p className="fine-print">Values describe cached asking-rent listings, not guaranteed or signed lease rents. “All” uses observation-count-weighted segment averages; an exact home type and status uses the segment median. Missing groups remain blank rather than being estimated.</p>
         </>
       ) : (
-        <EmptyState>No bedroom or property-type observations are cached for {city} yet. The official all-homes index above remains available; import property records for detailed cuts.</EmptyState>
+        <EmptyState>{rows.length ? "No observations match these filters. Choose another home type or listing status." : `No bedroom or property-type observations are cached for ${city} yet. Import property records for detailed cuts.`}{marketIndex && " The official all-homes index above remains available."}</EmptyState>
       )}
       <RentalReliability trends={trends} marketIndex={marketIndex} />
     </section>
@@ -203,6 +205,7 @@ function RentalTrends({ city, months, trends, state, onRetry }) {
 }
 
 function MarketIndexChart({ city, months, index }) {
+  const { palette } = useTheme();
   const points = index.points.map((point) => ({ month: point.month, rent: point.value }));
   const latest = points[points.length - 1];
   const domain = paddedMoneyDomain(points.map((point) => point.rent));
@@ -220,11 +223,11 @@ function MarketIndexChart({ city, months, index }) {
       <div className="rental-chart compact-chart" role="img" aria-label={`Official all-homes rent index for ${city}`}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={points} margin={{ top: 8, right: 12, left: 8, bottom: 0 }}>
-            <CartesianGrid stroke="#2a2a40" vertical={false} />
-            <XAxis dataKey="month" tick={AXIS} minTickGap={24} />
-            <YAxis tick={AXIS} width={62} domain={domain} tickFormatter={(value) => `$${Math.round(value / 100) / 10}k`} />
-            <Tooltip formatter={(value) => formatMoney(value)} contentStyle={{ background: "#16162a", border: "1px solid #2a2a40" }} />
-            <Line type="monotone" dataKey="rent" name="All homes" stroke="#ff8a65" strokeWidth={2.5} dot={false} />
+            <CartesianGrid {...palette.grid} vertical={false} />
+            <XAxis dataKey="month" tick={palette.axis} minTickGap={24} />
+            <YAxis tick={palette.axis} width={62} domain={domain} tickFormatter={(value) => `$${Math.round(value / 100) / 10}k`} />
+            <Tooltip formatter={(value) => formatMoney(value)} contentStyle={palette.tip} />
+            <Line type="monotone" dataKey="rent" name="All homes" stroke={palette.housing} isAnimationActive={false} strokeWidth={2.5} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

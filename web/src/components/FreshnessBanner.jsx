@@ -1,4 +1,6 @@
 import { honestySummary, sourcesPanelRows } from "../normalize.js";
+import AppearancePicker from "./AppearancePicker.jsx";
+import { useTheme } from "../ThemeProvider.jsx";
 
 const STATUS_LABEL = {
   live: "live",
@@ -24,6 +26,7 @@ export default function FreshnessBanner({
   onRefresh,
   onOpenSources,
 }) {
+  const { theme } = useTheme();
   const rows = sourcesPanelRows(freshness);
   const honesty = honestySummary(freshness, apiOnline);
   const stalePresent = rows.some((r) => r.status === "stale" || r.status === "aging");
@@ -31,9 +34,10 @@ export default function FreshnessBanner({
   return (
     <header className="banner">
       <div className="banner-top">
-        <div className="banner-brand">RealtyKit</div>
+        <div className="banner-brand">RealtyKit <span className="banner-theme-name">{theme.id !== "default" && theme.subtitle}</span></div>
         <div className="banner-honesty">{honesty}</div>
         <div className="banner-actions">
+          <AppearancePicker />
           <button type="button" onClick={onOpenSources}>Data sources</button>
           {apiOnline === false && <span className="chip warn">API offline</span>}
           <button type="button" onClick={onRefresh} disabled={refreshing || apiOnline === false}>

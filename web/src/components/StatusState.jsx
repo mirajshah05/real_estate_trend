@@ -1,5 +1,7 @@
+import { LoadingShip } from "./ThemeScene.jsx";
+
 export function LoadingState({ label = "Loading" }) {
-  return <div className="loading">{label}</div>;
+  return <div className="loading" role="status"><LoadingShip />{label}</div>;
 }
 
 export function ErrorState({ error, path }) {

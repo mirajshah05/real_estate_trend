@@ -1,8 +1,13 @@
+import ThemeScene from "./ThemeScene.jsx";
+import { useTheme } from "../ThemeProvider.jsx";
+
 export default function TaskLanding({ selected, onTab }) {
+  const { theme } = useTheme();
   const local = selected && selected.geo_id !== "nation:US";
   return <section className="task-landing">
+    <ThemeScene />
     <span className="eyebrow">{local ? "Your next step" : "Start here"}</span>
-    <h2>{local ? `Explore ${selected.name}` : "What would you like to find?"}</h2>
+    <h2>{local ? `Explore ${selected.name}` : theme.id === "default" ? "What would you like to find?" : theme.scene}</h2>
     <p className="panel-caption">{local ? "Your location is selected. Choose a task below to continue." : "Search a city or click a map circle, then choose a task. You can also start with a home address."}</p>
     <div className="task-cards">
       <button type="button" className="task-card" onClick={() => onTab("similar")}><strong>Find similar homes <span>→</span></strong><span>Use an address or your budget, bedrooms and size to find homes for sale or rent.</span></button>
