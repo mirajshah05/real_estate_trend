@@ -14,9 +14,12 @@ The project has two processes:
 
 ## Watch the app in action
 
-[![Animated preview of the RealtyKit Palo Alto walkthrough](docs/assets/realtykit-walkthrough-preview.gif)](https://github.com/mirajshah05/real_estate_trend/raw/refs/heads/main/docs/assets/realtykit-walkthrough.mp4)
+Play the 50-second walkthrough below.
 
-[Watch or download the short walkthrough (MP4)](https://github.com/mirajshah05/real_estate_trend/raw/refs/heads/main/docs/assets/realtykit-walkthrough.mp4).
+https://github.com/user-attachments/assets/d907b385-400a-4a50-b4ef-0142e3bbc94e
+
+[Download the walkthrough (MP4)](https://github.com/mirajshah05/real_estate_trend/raw/refs/heads/main/docs/assets/realtykit-walkthrough.mp4).
+
 It shows the dashboard, searching for Palo Alto, its official city boundary,
 housing trends, stock overlays, research details, and source freshness.
 The recording uses cached observations and keeps their dates and stale-data
