@@ -10,21 +10,32 @@ The project has two processes:
 - A Python/FastAPI backend that downloads, normalizes, caches, and serves data.
 - A React/Vite frontend with Leaflet maps and Recharts visualizations.
 
-![RealtyKit dashboard showing Sunnyvale boundary and San Jose metro trends](docs/assets/realtykit-dashboard.png)
+![RealtyKit dashboard in Potter head with the Palo Alto boundary and task menu](docs/assets/realtykit-dashboard.png)
 
 ## Watch the app in action
 
-Play the 50-second walkthrough below.
+Play the **3-minute, 33-second** feature walkthrough below. It starts in **Original**, tours all
+five themes midway, and keeps **Potter head** for the rest of the showcase.
 
-https://github.com/user-attachments/assets/d907b385-400a-4a50-b4ef-0142e3bbc94e
+https://github.com/user-attachments/assets/6a4aa75d-e318-4ee2-b196-be1bb95b93e9
 
-[Download the walkthrough (MP4)](https://github.com/mirajshah05/real_estate_trend/raw/refs/heads/main/docs/assets/realtykit-walkthrough.mp4).
+[Download the walkthrough (MP4)](docs/assets/realtykit-walkthrough.mp4?raw=true).
 
-It shows the dashboard, searching for Palo Alto, its official city boundary,
-housing trends, stock overlays, research details, and source freshness.
-The recording uses cached observations and keeps their dates and stale-data
-warnings visible. Palo Alto's boundary is local; the housing market figures
-shown are San Jose metro aggregates.
+The tour covers:
+
+- The task menu, location search, official city boundaries, and market trends.
+- **Find similar homes**: requirements, matching results, sorting, paging, and reference-address lookup.
+- **Rental intelligence**: the official rent index, bedroom-level observations, rent estimation, and CSV/JSON import controls.
+- **Appearance**: Original, Dark Side, Satirical, 90s Internet, and Potter head, plus house palettes.
+- Recent sales and their provenance, map listings, housing/stock overlays, correlations, outliers, and stock-market dips.
+- Full-screen research and the source-freshness ledger.
+
+The recording combines cached research with provider-returned home searches
+and keeps observation dates and stale-data warnings visible. Palo Alto's
+boundary is local; its housing market figures use San Jose metro aggregates.
+Detailed rental observations and the rent estimate use San Jose's cached
+sample. The import form is shown without adding data; unavailable mortgage
+data and provider coverage limits remain labeled in the app.
 
 RealtyKit does not scrape listing-site HTML. Compass remains unavailable until
 a licensed API or MLS/RESO feed is configured. Zillow and Redfin integrations
@@ -315,12 +326,12 @@ Typical statuses are:
 
 ### Appearance
 
-Use **Appearance** in the header to switch between Original dark, Star Wars,
-Harry Potter, Simpsons, and 90s Internet. Themes style the dashboard,
+Use **Appearance** in the header to switch between Original dark, Dark Side,
+Potter head, Satirical, and 90s Internet. Themes style the dashboard,
 map tiles, charts, forms, and tables without clearing your current research.
 
-Harry Potter includes a castle, floating candles, an owl, and four house
-palettes. Star Wars includes a starfield and a choice of Millennium Falcon,
+Potter head includes a castle, floating candles, an owl, and four house
+palettes. Dark Side includes a starfield and a choice of Millennium Falcon,
 X-wing, or Podracer, with a racer shown while requests load. Atmosphere and
 ambient motion can be disabled independently; system reduced-motion settings
 pause animation automatically. Preferences are saved in this browser, with

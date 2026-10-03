@@ -30,14 +30,14 @@ const light = {
 };
 export const THEMES = [
   { id: "default", name: "Original", subtitle: "The classic dark dashboard", scene: "Research your next move", scheme: "dark", tiles: "dark_all", tokens: {} },
-  { id: "galactic", name: "Star Wars", subtitle: "Galactic Console", scene: "Chart your next move", scheme: "dark", tiles: "dark_all", tokens: {
+  { id: "galactic", name: "Dark Side", subtitle: "Galactic Console", scene: "Chart your next move", scheme: "dark", tiles: "dark_all", tokens: {
     bg: "#08111f", panel: "#101e30", accent: "#f4d574", "on-accent": "#151c27", text: "#eaf4ff", muted: "#a9bfd5", line: "#344b65", link: "#f4d574",
     font: '"Segoe UI", system-ui, sans-serif', "title-font": '"Segoe UI", system-ui, sans-serif',
   } },
-  { id: "enchanted", name: "Harry Potter", subtitle: "Enchanted Atlas", scene: "Find where you belong", scheme: "light", tiles: "light_all", tokens: {
+  { id: "enchanted", name: "Potter head", subtitle: "Enchanted Atlas", scene: "Find where you belong", scheme: "light", tiles: "light_all", tokens: {
     ...light, bg: "#ece0c8", panel: "#f8efd9", accent: "#245471", link: "#245471", line: "#c8b594", "title-font": 'Georgia, "Times New Roman", serif',
   } },
-  { id: "springfield", name: "The Simpsons", subtitle: "Springfield Living", scene: "A place to call home", scheme: "light", tiles: "light_all", tokens: {
+  { id: "springfield", name: "Satirical", subtitle: "Springfield Living", scene: "A place to call home", scheme: "light", tiles: "light_all", tokens: {
     ...light, bg: "#e8f5fb", panel: "#fff8df", accent: "#87215d", link: "#87215d", text: "#2f2532", muted: "#605160", line: "#574b5a", "title-font": '"Trebuchet MS", "Segoe UI", sans-serif',
   } },
   { id: "dialup", name: "90s Internet", subtitle: "Dial-up India ’99", scene: "Namaste, house hunter!", scheme: "light", tiles: "light_all", tokens: {
